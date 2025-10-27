@@ -1,4 +1,4 @@
-# 🧠 Intelligent RFP Platform  
+# 🧠 EVAL  
 > AI-powered system for analyzing, summarizing, and comparing RFP and vendor documents.
 
 ---
