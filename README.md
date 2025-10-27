@@ -1,6 +1,11 @@
-## 📂 Project Structure
+# 🧠 Intelligent RFP Platform  
+> AI-powered system for analyzing, summarizing, and comparing RFP and vendor documents.
 
+---
 
+## 📁 Project Structure
+
+```bash
 intelligent-rfp-platform
 ├── backend/
 │   ├── api/
@@ -61,4 +66,3 @@ intelligent-rfp-platform
 ├── .env.example                  # Example environment variables
 ├── .gitignore                    # Ignored files and folders
 └── docker-compose.yml            # Containerization setup (backend, frontend, database)
-
