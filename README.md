@@ -6,7 +6,7 @@
 ## 📁 Project Structure
 
 ```bash
-intelligent-rfp-platform
+EVAL
 ├── backend/
 │   ├── api/
 │   │   ├── rfp_upload/           # Endpoints for uploading and processing RFP PDF files
