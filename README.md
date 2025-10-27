@@ -1,6 +1,6 @@
 ## 📂 Project Structure
 
-📦 EVAL
+📦 intelligent-rfp-platform
 ├── 📁 backend/
 │   ├── 📁 api/
 │   │   ├── rfp_upload/           # Endpoints for uploading and processing RFP PDF files
@@ -60,3 +60,4 @@
 ├── 📄 .env.example               # Example environment variables
 ├── 📄 .gitignore                 # Ignored files and folders
 └── 📄 docker-compose.yml         # Containerization setup (backend, frontend, database)
+
