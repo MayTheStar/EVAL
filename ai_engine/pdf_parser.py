@@ -4,11 +4,6 @@ import pdfplumber
 from docx import Document
 import docx2txt
 
-
-
-#-----------------------
-#check if PDF scanned
-#next steps: develop method for scanned PDFs using OCR
 def is_scanned_pdf(file_path):
     """
     Detects if a PDF is likely scanned (no extractable text).
@@ -20,9 +15,6 @@ def is_scanned_pdf(file_path):
                 return False
     return True
 
-
-#---------------------------------
-#PDF parser
 def parse_pdf(file_path):
     if is_scanned_pdf(file_path):
         raise ValueError(
@@ -54,9 +46,6 @@ def parse_pdf(file_path):
 
     return {"text": text_content, "tables": tables_content, "images": images_saved}
 
-
-#-------------------------
-#doc file parser
 def parse_docx(file_path):
     doc = Document(file_path)
     text_content = "\n".join([p.text for p in doc.paragraphs])
@@ -72,9 +61,6 @@ def parse_doc(file_path):
     text_content = docx2txt.process(file_path)
     return {"text": text_content, "tables": [], "images": []}
 
-
-#---------------------------
-#parser ile extentions method
 def parse_document(file_path):
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".pdf":
@@ -86,9 +72,10 @@ def parse_document(file_path):
     else:
         raise ValueError("Unsupported file type. Use PDF, DOC, or DOCX.")
 
-
-
-file_path = "/Users/rayana/EVAL/ai_engine/data/CalRFPexample.pdf"  
-result = parse_document(file_path)
-
-
+# Example usage
+if __name__ == "__main__":
+    file_path = "sample.pdf"  # replace with your file
+    result = parse_document(file_path)
+    print(result["text"][:1000], "\n...")  # preview text
+    print("Tables:", result["tables"])
+    print("Images saved:", result["images"])
