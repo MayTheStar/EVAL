@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from pathlib import Path
-from ai_engine.pdf_processing import parse_document
+from ai_engine import pdf_processing
 import uvicorn
 
 app = FastAPI()
@@ -26,7 +26,7 @@ async def upload_file(file: UploadFile = File(...)):
 
     # Process the PDF
     try:
-        pages = parse_document(str(file_path))
+        pages = pdf_processing.parse_document(str(file_path))
         combined_text = " ".join(page["cleaned_text"] for page in pages)
         return {
             "filename": file.filename,
