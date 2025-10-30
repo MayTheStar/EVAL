@@ -1,3 +1,5 @@
+
+
 import os
 import re
 import json
@@ -12,9 +14,15 @@ from docx import Document
 import docx2txt
 
 # ----------------------------
-# Detect Scanned PDFs
+# UTILITY FUNCTIONS
 # ----------------------------
+
+
+#-------------------------------------
+#check if pdf is scanned and apply OCR if needed
+#-------------------------------------
 def is_scanned_pdf(file_path: str) -> bool:
+
     with pdfplumber.open(file_path) as pdf:
         for page in pdf.pages:
             text = page.extract_text()
@@ -22,74 +30,133 @@ def is_scanned_pdf(file_path: str) -> bool:
                 return False
     return True
 
-# ----------------------------
-# OCR for Scanned PDFs
-# ----------------------------
+
+
+#-------------------------------------
+#extract scanned PDF using OCR
+#-------------------------------------
 def ocr_pdf(file_path: str) -> List[str]:
+
     pages_text = []
     images = convert_from_path(file_path)
-    for img in images:
-        pages_text.append(pytesseract.image_to_string(img))
+    for idx, img in enumerate(images):
+        text = pytesseract.image_to_string(img)
+        pages_text.append(text)
     return pages_text
 
-# ----------------------------
-# Clean extracted text
-# ----------------------------
+
+#-------------------------------------
+#clean text 
+#-------------------------------------
 def clean_text(text: str) -> str:
+
     text = text.replace("\n", " ")
     text = re.sub(r'\s+', ' ', text)
-    return text.strip()
+    text = text.strip()
+    return text
+
 
 # ----------------------------
-# Extract Digital PDF
+# PDF PARSER
 # ----------------------------
+
 def extract_pdf(file_path: str) -> List[Dict[str, Any]]:
+
     pages_data = []
 
     if is_scanned_pdf(file_path):
         ocr_texts = ocr_pdf(file_path)
         for idx, txt in enumerate(ocr_texts):
-            pages_data.append({"page_number": idx + 1, "text": txt, "tables": []})
+            pages_data.append({
+                "page_number": idx + 1,
+                "text": txt,
+                "tables": []
+            })
         return pages_data
 
+    # For digital PDFs
+    pdf_doc = fitz.open(file_path)
     with pdfplumber.open(file_path) as pdf:
         for idx, page in enumerate(pdf.pages):
+            # Extract text
             text = page.extract_text() or ""
+            
+            # Extract tables
             tables = page.extract_tables()
+            structured_tables = []
+            for tidx, table in enumerate(tables):
+                structured_tables.append({
+                    "table_index": tidx + 1,
+                    "rows": len(table),
+                    "columns": len(table[0]) if table else 0,
+                    "data": table
+                })
 
             pages_data.append({
                 "page_number": idx + 1,
                 "text": text,
-                "tables": [
-                    {
-                        "table_index": t + 1,
-                        "rows": len(tbl),
-                        "columns": len(tbl[0]) if tbl else 0,
-                        "data": tbl
-                    } for t, tbl in enumerate(tables)
-                ]
+                "tables": structured_tables
             })
+
     return pages_data
 
+
 # ----------------------------
-# Extract DOCX / DOC
+# DOCX / DOC PARSER
 # ----------------------------
-def extract_docx(file_path: str):
+
+def extract_docx(file_path: str) -> List[Dict[str, Any]]:
     doc = Document(file_path)
-    tables = []
-    for i, table in enumerate(doc.tables):
-        rows = [[cell.text for cell in row.cells] for row in table.rows]
-        tables.append({"table_index": i + 1, "rows": len(rows), "columns": len(rows[0]) if rows else 0, "data": rows})
-    return [{"page_number": 1, "text": "\n".join(p.text for p in doc.paragraphs), "tables": tables}]
+    pages_data = []
 
-def extract_doc(file_path: str):
-    return [{"page_number": 1, "text": docx2txt.process(file_path), "tables": []}]
+    text_content = "\n".join([p.text for p in doc.paragraphs])
+    tables_content = []
+    for t_idx, table in enumerate(doc.tables):
+        table_rows = [[cell.text for cell in row.cells] for row in table.rows]
+        tables_content.append({
+            "table_index": t_idx + 1,
+            "rows": len(table_rows),
+            "columns": len(table_rows[0]) if table_rows else 0,
+            "data": table_rows
+        })
+
+    pages_data.append({
+        "page_number": 1,
+        "text": text_content,
+        "tables": tables_content
+    })
+    return pages_data
+
+
+def extract_doc(file_path: str) -> List[Dict[str, Any]]:
+    text = docx2txt.process(file_path)
+    return [{
+        "page_number": 1,
+        "text": text,
+        "tables": []
+    }]
+
 
 # ----------------------------
-# Full Pipeline
+# CLEANING / NORMALIZATION
 # ----------------------------
-def parse_document(file_path: str):
 
+def clean_pages(pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    cleaned = []
+    for page in pages:
+        cleaned.append({
+            "page_number": page["page_number"],
+            "cleaned_text": clean_text(page["text"]),
+            "tables": page.get("tables", [])
+        })
+    return cleaned
+
+
+# ----------------------------
+# PIPELINE 
+# ----------------------------
+
+def parse_document(file_path: str) -> List[Dict[str, Any]]:
     ext = Path(file_path).suffix.lower()
     if ext == ".pdf":
         pages = extract_pdf(file_path)
@@ -98,9 +165,28 @@ def parse_document(file_path: str):
     elif ext == ".doc":
         pages = extract_doc(file_path)
     else:
-        raise ValueError("Unsupported file format!")
+        raise ValueError(f"Unsupported file type: {ext}")
 
-    for page in pages:
-        page["cleaned_text"] = clean_text(page["text"])
+    cleaned_pages = clean_pages(pages)
+    return cleaned_pages
 
-    return pages
+
+# ----------------------------
+# SAVE  OUTPUT
+# ----------------------------
+
+def save_json(data: List[Dict[str, Any]], output_path: str):
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+# ----------------------------
+# MAIN
+# ----------------------------
+
+if __name__ == "__main__":
+    FILE_PATH = "/EVAL/ai_engine/data/CalRFPexample.pdf"  
+    OUTPUT_JSON = "rfp_preprocessed.json"
+
+    processed_pages = parse_document(FILE_PATH)
+    save_json(processed_pages, OUTPUT_JSON)
