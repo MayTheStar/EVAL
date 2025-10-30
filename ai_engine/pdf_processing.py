@@ -12,7 +12,7 @@ import pytesseract
 from pdf2image import convert_from_path
 from docx import Document
 import docx2txt
-
+from ai_engine.LLMSecDetector import detect_sections_with_llm
 # ----------------------------
 # UTILITY FUNCTIONS
 # ----------------------------
@@ -185,8 +185,18 @@ def save_json(data: List[Dict[str, Any]], output_path: str):
 # ----------------------------
 
 if __name__ == "__main__":
-    FILE_PATH = "/EVAL/ai_engine/data/CalRFPexample.pdf"  
+    FILE_PATH = "/Users/rayana/EVAL/ai_engine/CalRFPexample.pdf"
     OUTPUT_JSON = "rfp_preprocessed.json"
+    OUTPUT_SECTIONS = "rfp_sections.json"
 
+    # Parse document and save preprocessed output
     processed_pages = parse_document(FILE_PATH)
     save_json(processed_pages, OUTPUT_JSON)
+
+    # Detect sections using LLM
+    sections = detect_sections_with_llm(processed_pages)
+
+    # Save sectioned output
+    save_json(sections, OUTPUT_SECTIONS)
+
+    print(f"LLM-based section detection saved to: {OUTPUT_SECTIONS}")
