@@ -66,3 +66,6 @@ EVAL
 ├── .env.example                  # Example environment variables
 ├── .gitignore                    # Ignored files and folders
 └── docker-compose.yml            # Containerization setup (backend, frontend, database)
+
+## 📄 Documentation
+For detailed sprint reports, see [docs/SPRINT_1_REPORT.md](docs/SPRINT_1_REPORT.md)
