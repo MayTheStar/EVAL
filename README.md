@@ -68,4 +68,4 @@ EVAL
 └── docker-compose.yml            # Containerization setup (backend, frontend, database)
 
 ## 📄 Documentation
-For detailed sprint reports, see [docs/SPRINT_1_REPORT.md](docs/SPRINT_1_REPORT.md)
+For more details about the sprint, check the SPRINT_1_REPORT.md file in the docs folder.
