@@ -25,4 +25,5 @@ class Document(Base):
     status: Mapped[DocStatus] = mapped_column(Enum(DocStatus, native_enum=False))
     uploaded_at: Mapped[str] = mapped_column(DateTime(timezone=True), server_default=func.now())
     parsed_text: Mapped[str | None] = mapped_column(Text)
-    metadata: Mapped[dict | None] = mapped_column(JSON, default=dict)
+    extra_metadata: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
+
