@@ -1,163 +1,275 @@
 """
-Hybrid Chunking with Docling
-=============================
-
-This script demonstrates Docling's HybridChunker for intelligent
-document chunking that respects both document structure and
-token limits.
-
-What is Hybrid Chunking?
-- Combines hierarchical document structure with token-aware splitting
-- Respects semantic boundaries (paragraphs, sections, tables)
-- Ensures chunks fit within token limits for embeddings
-- Preserves metadata and document hierarchy
-
-Why use it?
-- Better for RAG systems than naive text splitting
-- Maintains semantic coherence within chunks
-- Optimized for embedding models with token limits
-- Preserves document structure and context
-
-Usage:
-    python 04_hybrid_chunking.py
+RFP Hybrid Chunker + Token-based Merge Pass + Text Cleaning
+- Cleans extracted text BEFORE token counting & merging
+- Preserves Docling structural segmentation
+- Merges small chunks forward until >= MIN_TOKENS or would exceed MAX_TOKENS
 """
+
+import json
+import re
+from pathlib import Path
+from typing import List, Optional, Dict, Any
 
 from docling.document_converter import DocumentConverter
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
-from pathlib import Path
 
-def chunk_document(file_path: str, max_tokens: int = 512):
-    """Convert and chunk document using HybridChunker."""
 
-    print(f"\n📄 Processing: {Path(file_path).name}")
+# -----------------------
+# Configuration
+# -----------------------
+MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"  # tokenizer for token counts
+MIN_TOKENS = 512
+MAX_TOKENS = 1024
+TXT_OUTPUT = "/Users/rayana/EVAL/ai_engine/output_chunks.txt"
+JSON_OUTPUT = "/Users/rayana/EVAL/ai_engine/output_chunks.json"
+PDF_PATH = "/Users/rayana/EVAL/ai_engine/USask RFP.pdf"
 
-    # Step 1: Convert document to DoclingDocument
-    print("   Step 1: Converting document...")
-    converter = DocumentConverter()
-    result = converter.convert(file_path)
-    doc = result.document
 
-    # Step 2: Initialize tokenizer (using sentence-transformers model)
-    print("   Step 2: Initializing tokenizer...")
-    model_id = "sentence-transformers/all-MiniLM-L6-v2"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+# -----------------------
+# Cleaning Function
+# -----------------------
+def clean_text(text: str) -> str:
+    """Light & safe cleaning that preserves structure."""
+    if not text:
+        return ""
+    # Remove multiple spaces/tabs
+    text = re.sub(r"[ \t]+", " ", text)
+    # Fix hyphenated word breaks “develop-\nment” → “development”
+    text = re.sub(r"-\s*\n\s*", "", text)
+    # Normalize line breaks: allow max 2 in a row
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    # Remove stray bullet characters
+    text = re.sub(r"([•·●]+)\s*", "", text)
+    return text.strip()
 
-    # Step 3: Create HybridChunker
-    print(f"   Step 3: Creating chunker (max {max_tokens} tokens)...")
-    chunker = HybridChunker(
-        tokenizer=tokenizer,
-        max_tokens=max_tokens,
-        merge_peers=True  # Merge small adjacent chunks
-    )
 
-    # Step 4: Generate chunks
-    print("   Step 4: Generating chunks...")
-    chunk_iter = chunker.chunk(dl_doc=doc)
-    chunks = list(chunk_iter)
-
-    return chunks, tokenizer, chunker
-
-def analyze_chunks(chunks, tokenizer):
-    """Analyze and display chunk statistics."""
-
-    print("\n" + "=" * 60)
-    print("CHUNK ANALYSIS")
-    print("=" * 60)
-
-    total_tokens = 0
-    chunk_sizes = []
-
-    for i, chunk in enumerate(chunks):
-        # Get text content
-        text = chunk.text
-        tokens = tokenizer.encode(text)
-        token_count = len(tokens)
-
-        total_tokens += token_count
-        chunk_sizes.append(token_count)
-
-        # Display first 3 chunks in detail
-        if i < 3:
-            print(f"\n--- Chunk {i} ---")
-            print(f"Tokens: {token_count}")
-            print(f"Characters: {len(text)}")
-            print(f"Preview: {text[:150]}...")
-
-            # Show metadata if available
-            if hasattr(chunk, 'meta') and chunk.meta:
-                print(f"Metadata: {chunk.meta}")
-
-    # Summary statistics
-    print("\n" + "=" * 60)
-    print("SUMMARY STATISTICS")
-    print("=" * 60)
-    print(f"Total chunks: {len(chunks)}")
-    print(f"Total tokens: {total_tokens}")
-    print(f"Average tokens per chunk: {total_tokens / len(chunks):.1f}")
-    print(f"Min tokens: {min(chunk_sizes)}")
-    print(f"Max tokens: {max(chunk_sizes)}")
-
-    # Token distribution
-    print(f"\nToken distribution:")
-    ranges = [(0, 128), (128, 256), (256, 384), (384, 512)]
-    for start, end in ranges:
-        count = sum(1 for size in chunk_sizes if start <= size < end)
-        print(f"  {start}-{end} tokens: {count} chunks")
-
-def save_chunks(chunks, chunker, output_path: str):
-    """Save chunks to file with separators, preserving context and headings."""
-
-    with open(output_path, 'w', encoding='utf-8') as f:
-        for i, chunk in enumerate(chunks):
-            f.write(f"{'='*60}\n")
-            f.write(f"CHUNK {i}\n")
-            f.write(f"{'='*60}\n")
-
-            # Use contextualize to preserve headings and metadata
-            contextualized_text = chunker.contextualize(chunk=chunk)
-            f.write(contextualized_text)
-            f.write("\n\n")
-
-    print(f"\n✓ Chunks saved to: {output_path}")
-    print("   (with preserved headings and document context)")
-
-def main():
-    print("=" * 60)
-    print("Hybrid Chunking with Docling")
-    print("=" * 60)
-
-    # Document to process
-    pdf_path = "/Users/rayana/EVAL/ai_engine/USask RFP.pdf"
-    max_tokens = 512  # Typical limit for embedding models
-
-    print(f"\nInput: {pdf_path}")
-    print(f"Max tokens per chunk: {max_tokens}")
-
+# -----------------------
+# Helpers
+# -----------------------
+def safe_meta(chunk) -> Dict[str, Any]:
+    m = getattr(chunk, "meta", {}) or {}
+    if isinstance(m, dict):
+        return m
     try:
-        # Generate chunks
-        chunks, tokenizer, chunker = chunk_document(pdf_path, max_tokens)
+        return dict(m)
+    except Exception:
+        return {}
 
-        # Analyze chunks
-        analyze_chunks(chunks, tokenizer)
 
-        # Save chunks
-        output_path = "/Users/rayana/EVAL/ai_engine/output_chunks.txt"
-        save_chunks(chunks, chunker, output_path)
+def extract_page_number(chunk) -> Optional[int]:
+    meta = safe_meta(chunk)
+    if "page_number" in meta:
+        return meta["page_number"]
+    for alt in ("page", "page_num", "pg", "page_index", "pageno"):
+        if alt in meta:
+            return meta[alt]
+    parent = getattr(chunk, "parent", None)
+    while parent is not None:
+        pm = safe_meta(parent)
+        if "page_number" in pm:
+            return pm["page_number"]
+        for alt in ("page", "page_num", "pg", "page_index", "pageno"):
+            if alt in pm:
+                return alt
+        parent = getattr(parent, "parent", None)
+    return None
 
-        print("\n" + "=" * 60)
-        print("KEY BENEFITS OF HYBRID CHUNKING")
-        print("=" * 60)
-        print("✓ Respects document structure (sections, paragraphs)")
-        print("✓ Token-aware (fits embedding model limits)")
-        print("✓ Semantic coherence (doesn't split mid-sentence)")
-        print("✓ Metadata preservation (headings, document context)")
-        print("✓ Ready for RAG (optimized chunk sizes)")
 
-    except Exception as e:
-        print(f"\n✗ Error: {e}")
-        import traceback
-        traceback.print_exc()
+def get_parent_headings(chunk, max_levels: int = 10) -> List[str]:
+    heading_keys = [
+        "heading", "title", "section_title", "heading_text",
+        "h1", "h2", "h3", "name", "section", "caption", "headings"
+    ]
+    headings, seen = [], set()
+    meta = safe_meta(chunk)
+
+    for key in heading_keys:
+        if key in meta and meta[key]:
+            val = " > ".join(val for val in meta[key]) if isinstance(meta[key], (list, tuple)) else str(meta[key])
+            val = val.strip()
+            if val and val not in seen:
+                headings.append(val)
+                seen.add(val)
+
+    parent = getattr(chunk, "parent", None)
+    levels = 0
+    while parent is not None and levels < max_levels:
+        pm = safe_meta(parent)
+        for key in heading_keys:
+            if key in pm and pm[key]:
+                val = " > ".join(val for val in pm[key]) if isinstance(pm[key], (list, tuple)) else str(pm[key])
+                val = val.strip()
+                if val and val not in seen:
+                    headings.insert(0, val)
+                    seen.add(val)
+        parent = getattr(parent, "parent", None)
+        levels += 1
+
+    return headings
+
+
+# -----------------------
+# Chunking + Cleaning
+# -----------------------
+def chunk_document(pdf_path: str, tokenizer) -> List[dict]:
+    print(f"📄 Converting document: {pdf_path}")
+    converter = DocumentConverter()
+    doc = converter.convert(pdf_path).document
+
+    print("🧩 Chunking with HybridChunker...")
+    chunker = HybridChunker(tokenizer=tokenizer, max_tokens=MAX_TOKENS, merge_peers=True)
+
+    raw_chunks = list(chunker.chunk(doc))
+    chunk_dicts = []
+
+    for idx, ch in enumerate(raw_chunks):
+        # CLEAN THE TEXT BEFORE token counting & merging
+        raw_text = getattr(ch, "text", "") or ""
+        text = clean_text(raw_text)
+
+        try:
+            contextual = clean_text(chunker.contextualize(chunk=ch))
+        except Exception:
+            contextual = text
+
+        try:
+            token_ids = tokenizer.encode(text, add_special_tokens=False)
+            token_count = len(token_ids)
+        except Exception:
+            token_count = max(1, len(text.split()))
+
+        chunk_dicts.append({
+            "orig_index": idx,
+            "text": text,
+            "contextualized_text": contextual,
+            "token_count": token_count,
+            "page_number": extract_page_number(ch),
+            "headings": get_parent_headings(ch),
+            "orig_chunk": ch
+        })
+
+    print(f"✅ Generated {len(chunk_dicts)} raw chunks (cleaned).")
+    return chunk_dicts, chunker
+
+
+# -----------------------
+# Merge pass (same code)
+# -----------------------
+def merge_small_chunks_forward(chunk_dicts: List[dict],
+                               tokenizer,
+                               min_tokens: int = MIN_TOKENS,
+                               max_tokens: int = MAX_TOKENS) -> List[dict]:
+
+    merged = []
+    buffer = None
+
+    def make_buffer_from_chunk(c):
+        return {
+            "orig_indices": [c["orig_index"]],
+            "text": c["text"],
+            "contextualized_texts": [c["contextualized_text"]],
+            "token_count": c["token_count"],
+            "pages": [c["page_number"]] if c["page_number"] else [],
+            "headings": list(c["headings"]) if c["headings"] else []
+        }
+
+    def finalize_buffer(buf):
+        combined_context = "\n\n".join(buf["contextualized_texts"])
+        rep_page = buf["pages"][0] if buf["pages"] else None
+        uniq_headings = []
+        seen = set()
+        for h in buf["headings"]:
+            if h and h not in seen:
+                uniq_headings.append(h)
+                seen.add(h)
+        return {
+            "orig_indices": buf["orig_indices"],
+            "text": buf["text"],
+            "contextualized_text": combined_context,
+            "token_count": buf["token_count"],
+            "page_number": rep_page,
+            "headings": uniq_headings
+        }
+
+    i = 0
+    while i < len(chunk_dicts):
+        current = chunk_dicts[i]
+
+        if buffer is None:
+            buffer = make_buffer_from_chunk(current)
+            i += 1
+            continue
+
+        if buffer["token_count"] >= min_tokens:
+            merged.append(finalize_buffer(buffer))
+            buffer = None
+            continue
+
+        next_chunk = current
+        tentative = buffer["token_count"] + next_chunk["token_count"]
+
+        if tentative <= max_tokens:
+            buffer["orig_indices"].append(next_chunk["orig_index"])
+            buffer["text"] += "\n\n" + next_chunk["text"]
+            buffer["contextualized_texts"].append(next_chunk["contextualized_text"])
+            buffer["token_count"] = tentative
+            if next_chunk["page_number"]:
+                buffer["pages"].append(next_chunk["page_number"])
+            buffer["headings"].extend(next_chunk["headings"] or [])
+            i += 1
+        else:
+            merged.append(finalize_buffer(buffer))
+            buffer = None
+
+    if buffer:
+        merged.append(finalize_buffer(buffer))
+
+    print(f"✅ Merge pass complete: {len(chunk_dicts)} -> {len(merged)} chunks")
+    return merged
+
+
+# -----------------------
+# Save outputs (unchanged)
+# -----------------------
+def save_txt(merged_chunks: List[dict], out_path: str):
+    with open(out_path, "w", encoding="utf-8") as f:
+        for idx, mc in enumerate(merged_chunks):
+            f.write("="*60 + "\n")
+            f.write(f"CHUNK {idx}\n")
+            f.write("="*60 + "\n")
+            f.write(f"Orig indices: {mc['orig_indices']}\n")
+            f.write(f"Page: {mc['page_number']}\n")
+            f.write(f"Token Count: {mc['token_count']}\n")
+            if mc["headings"]:
+                f.write(f"Headings: {' > '.join(mc['headings'])}\n")
+            f.write("-"*60 + "\n\n")
+            f.write(mc["contextualized_text"] + "\n\n")
+    print(f"✅ TXT saved: {out_path}")
+
+
+def save_json(merged_chunks: List[dict], out_path: str):
+    with open(out_path, "w", encoding="utf-8") as jf:
+        json.dump(merged_chunks, jf, indent=2, ensure_ascii=False)
+    print(f"✅ JSON saved: {out_path}")
+
+
+# -----------------------
+# Main
+# -----------------------
+def main():
+    print("🔁 Loading tokenizer:", MODEL_ID)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+
+    chunk_dicts, _ = chunk_document(PDF_PATH, tokenizer)
+
+    merged = merge_small_chunks_forward(chunk_dicts, tokenizer)
+
+    save_txt(merged, TXT_OUTPUT)
+    save_json(merged, JSON_OUTPUT)
+
+    print("\n🎯 Done — Clean text + better merging ready for RAG ingestion!")
+
 
 if __name__ == "__main__":
     main()

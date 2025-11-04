@@ -26,7 +26,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # ----------------------------
 CHUNK_FILE = Path("/Users/rayana/EVAL/ai_engine/output_chunks.txt")
 OUTPUT_FILE = Path("/Users/rayana/EVAL/ai_engine/rfp_chunk_analysis.json")
-MODEL = "gpt-3.5-turbo"
+MODEL = "gpt-4o-mini"
 TEMPERATURE = 0
 
 # ----------------------------
@@ -52,28 +52,7 @@ def read_chunks(file_path):
         processed_chunks.append(text)
     return processed_chunks
 
-# ----------------------------
-# Detect Table of Contents chunks
-# ----------------------------
-def is_toc_chunk(chunk_text):
-    """
-    Detect if a chunk is a Table of Contents.
-    Heuristic: 
-    - Contains 'TABLE OF CONTENTS' (case-insensitive)
-    - OR many lines with dots and numbers
-    """
-    if "TABLE OF CONTENTS" in chunk_text.upper():
-        return True
 
-    lines = chunk_text.splitlines()
-    toc_lines = 0
-    for line in lines:
-        if '.' in line and any(char.isdigit() for char in line):
-            toc_lines += 1
-    if len(lines) > 0 and toc_lines / len(lines) > 0.5:
-        return True
-
-    return False
 
 # ----------------------------
 # Analyze a chunk using OpenAI (new RFP prompt)
@@ -135,22 +114,9 @@ def main():
     print(f"Total chunks available: {len(chunks)}")
 
     all_chunks_data = []
-    START_CHUNK = 29  # Start from chunk 30 (0-based index)
+    START_CHUNK = 0
 
     for i, chunk_text in enumerate(chunks[START_CHUNK:], start=START_CHUNK):
- 
-        # if is_toc_chunk(chunk_text):
-        #     print(f"Skipping chunk {i+1} (Table of Contents)")
-        #     chunk_data = {
-        #         "chunk_index": i,
-        #         "text": chunk_text,
-        #         "requirements": [],
-        #         "summary": "",
-        #         "evaluation_labels": [],
-        #         "raw_model_output": "Skipped (Table of Contents)"
-        #     }
-        #     all_chunks_data.append(chunk_data)
-        #     continue
 
         print(f"\nAnalyzing chunk {i+1}/{len(chunks)}...")
         chunk_result = analyze_chunk(chunk_text)
