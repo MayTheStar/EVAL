@@ -41,7 +41,7 @@ def parse_vendor_responses():
 
     # Process each vendor file
     for file_path in vendor_files:
-        vendor_name = file_path.stem  # Example: "vendorA"
+        vendor_name = file_path.stem.replace("_", " ").title().strip()
         print(f"\n🔹 Processing vendor: {vendor_name} ({file_path.suffix})")
 
         try:

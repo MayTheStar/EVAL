@@ -1,14 +1,14 @@
 import json
-import os
-import glob
-from pathlib import Path
 from openai import OpenAI
+from pathlib import Path
+import os
 from dotenv import load_dotenv
+import random
 
 # ----------------------------
 # Load environment variables
 # ----------------------------
-load_dotenv()
+load_dotenv()  # Load variables from .env file
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 if not OPENAI_API_KEY:
@@ -20,21 +20,20 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # ----------------------------
 # Configuration
 # ----------------------------
-CHUNK_FILE = Path("/Users/maybader/EVAL/ai_engine/output_chunks.txt")   # RFP chunks (text)
+CHUNK_FILE = Path("/Users/maybader/EVAL/ai_engine/output_chunks.txt")
 OUTPUT_FILE = Path("/Users/maybader/EVAL/ai_engine/rfp_chunk_analysis.json")
 MODEL = "gpt-4o-mini"
 TEMPERATURE = 0
 
-
 # ----------------------------
-# Helper function for RFP chunks
+# Helper function to read chunks from a file
 # ----------------------------
 def read_chunks(file_path):
     """Read chunks separated by ===CHUNK=== markers in a text file"""
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    chunks = content.split("=" * 60)
+    chunks = content.split("="*60)
     processed_chunks = []
 
     for chunk in chunks:
@@ -50,40 +49,38 @@ def read_chunks(file_path):
     return processed_chunks
 
 
-# ----------------------------
-# Analyze a chunk using OpenAI
-# ----------------------------
-def analyze_chunk(chunk_text, prompt_type="RFP"):
-    if prompt_type == "RFP":
-        role_description = (
-            "You are an expert in analyzing government and corporate RFPs. "
-            "Your task is to extract all explicit and implied requirements."
-        )
-    else:
-        role_description = (
-            "You are an expert analyzing vendor proposals in response to RFPs. "
-            "Extract all capabilities, commitments, or deliverables mentioned by the vendor."
-        )
 
+# ----------------------------
+# Analyze a chunk using OpenAI (new RFP prompt)
+# ----------------------------
+def analyze_chunk(chunk_text):
     prompt = f"""
-{role_description}
+You are an expert in analyzing government and corporate RFPs. Your task is to extract **all explicit and implied requirements** from the following text. Focus on capturing actionable information that a vendor must fulfill or that will be used to evaluate proposals.  
 
 Instructions:
-1. Extract key actionable points or requirements.
-2. Summarize the text in 2–3 sentences under "summary".
-3. Identify key focus areas under "evaluation_labels" (e.g., Technical, Financial, Compliance).
 
-Return valid JSON:
+1. Extract all **requirements** mentioned in the text. Include both explicit and implied requirements.  
+2. Summarize the text in **2–3 sentences** under "summary". Focus on the key objectives and context of the RFP.  
+3. Identify any **evaluation labels or keywords** describing the type of requirement (e.g., "Technical", "Financial", "Timeline", "Compliance") under "evaluation_labels".  
+
+**Output format:** Return a strictly valid JSON object as follows:  
+
 {{
-    "requirements": [],
-    "summary": "",
-    "evaluation_labels": []
+    "requirements": [
+        "Requirement 1",
+        "Requirement 2",
+        "Requirement 3"
+    ],
+    "summary": "Short 2-3 sentence summary of the text",
+    "evaluation_labels": [
+        "Label1",
+        "Label2"
+    ]
 }}
 
-Now analyze:
+**Now analyze the following text:**  
 {chunk_text}
 """
-
     try:
         response = client.chat.completions.create(
             model=MODEL,
@@ -105,52 +102,44 @@ Now analyze:
 
     return chunk_output
 
-
 # ----------------------------
-# Main processing
+# Main processing function
 # ----------------------------
 def main():
-    # --- RFP ---
     chunks = read_chunks(CHUNK_FILE)
-    print(f"📄 Total RFP chunks: {len(chunks)}")
+    print(f"Total chunks available: {len(chunks)}")
 
-    rfp_results = []
-    for i, chunk_text in enumerate(chunks):
-        print(f"\nAnalyzing RFP chunk {i+1}/{len(chunks)}...")
-        result = analyze_chunk(chunk_text, prompt_type="RFP")
-        rfp_results.append(result)
+    all_chunks_data = []
+    START_CHUNK = 0
 
-    rfp_output_file = OUTPUT_FILE.parent / "rfp_chunk_analysis_all.json"
-    with open(rfp_output_file, "w", encoding="utf-8") as f:
-        json.dump(rfp_results, f, indent=4, ensure_ascii=False)
-    print(f"✅ RFP analysis saved to {rfp_output_file}")
+    for i, chunk_text in enumerate(chunks[START_CHUNK:], start=START_CHUNK):
 
-    # --- Vendors ---
-    vendor_json_files = glob.glob("/Users/maybader/EVAL/ai_engine/*_chunks.json")
-    for vendor_file in vendor_json_files:
-        if "output_chunks.json" in vendor_file:  # Skip RFP chunks JSON
-            continue
-        vendor_name = Path(vendor_file).stem.replace("_chunks", "")
-        print(f"\n🔹 Analyzing vendor: {vendor_name}")
+        print(f"\nAnalyzing chunk {i+1}/{len(chunks)}...")
+        chunk_result = analyze_chunk(chunk_text)
+        chunk_data = {
+            "chunk_index": i,
+            "text": chunk_text,
+            "requirements": chunk_result.get("requirements", []),
+            "summary": chunk_result.get("summary", ""),
+            "evaluation_labels": chunk_result.get("evaluation_labels", []),
+            "raw_model_output": chunk_result.get("raw_model_output", "")
+        }
+        all_chunks_data.append(chunk_data)
 
-        with open(vendor_file, "r", encoding="utf-8") as vf:
-            vendor_chunks = json.load(vf)
+    # Save results
+    output_file = OUTPUT_FILE.parent / "rfp_chunk_analysis_all.json"
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(all_chunks_data, f, indent=4, ensure_ascii=False)
 
-        vendor_results = []
-        for i, chunk in enumerate(vendor_chunks):
-            text = chunk.get("contextualized_text") or chunk.get("text", "")
-            print(f"   ↳ Chunk {i+1}/{len(vendor_chunks)}")
-            result = analyze_chunk(text, prompt_type="Vendor")
-            vendor_results.append(result)
-
-        vendor_output_file = Path(vendor_file).parent / f"{vendor_name}_analysis.json"
-        with open(vendor_output_file, "w", encoding="utf-8") as f:
-            json.dump(vendor_results, f, indent=4, ensure_ascii=False)
-        print(f"✅ Vendor analysis saved to {vendor_output_file}")
-
+    print(f"\n✓ Analysis of all chunks complete. Results saved to {output_file}")
 
 # ----------------------------
-# Run
+# Run main
 # ----------------------------
 if __name__ == "__main__":
     main()
+
+
+
+
+
