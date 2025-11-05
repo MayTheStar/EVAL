@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import numpy as np
@@ -6,16 +7,16 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 # -----------------------------
-# CONFIGURATION
+# DEFAULT CONFIG
 # -----------------------------
-VECTOR_DB_FILE = "chunks_faiss.index"
-METADATA_FILE = "chunks_metadata.json"
-
+DEFAULT_INDEX_FILE = "chunks_faiss.index"
+DEFAULT_METADATA_FILE = "chunks_metadata.json"
 EMBEDDING_MODEL = "text-embedding-3-large"
 OPENAI_MODEL = "gpt-4o-mini"
 TOP_K_CHUNKS = 5
 MAX_TOKENS = 1500
 
+# Load API key
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
@@ -24,16 +25,28 @@ if not OPENAI_API_KEY:
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-# Load FAISS + metadata
-index = faiss.read_index(VECTOR_DB_FILE)
-with open(METADATA_FILE, "r", encoding="utf-8") as f:
-    metadata = json.load(f)
+# -----------------------------
+# DYNAMIC LOADING
+# -----------------------------
+def load_vector_db(index_path, metadata_path):
+    if not os.path.exists(index_path):
+        raise FileNotFoundError(f"Vector DB file not found: {index_path}")
+    if not os.path.exists(metadata_path):
+        raise FileNotFoundError(f"Metadata file not found: {metadata_path}")
+
+    index = faiss.read_index(index_path)
+    with open(metadata_path, "r", encoding="utf-8") as f:
+        metadata = json.load(f)
+
+    print(f"✅ Loaded index: {index_path}")
+    print(f"✅ Loaded metadata: {metadata_path} ({len(metadata)} chunks)")
+    return index, metadata
 
 
 # -----------------------------
 # RETRIEVAL
 # -----------------------------
-def retrieve_chunks(query, top_k=TOP_K_CHUNKS):
+def retrieve_chunks(query, index, metadata, top_k=TOP_K_CHUNKS):
     emb = client.embeddings.create(
         model=EMBEDDING_MODEL,
         input=query
@@ -58,7 +71,7 @@ def generate_answer_streaming(query, chunks):
         {"role": "system", "content":
             "You are an RFP expert. Only answer using the provided context. "
             "Every claim MUST cite the chunk number like [C3]. "
-            "If no context supports the answer, say: Not in the RFP."
+            "If no context supports the answer → respond: Not in the RFP."
         },
         {"role": "user", "content":
             f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
@@ -74,8 +87,8 @@ def generate_answer_streaming(query, chunks):
     )
 
     final_answer = ""
-    for chunk in response:
-        delta = chunk.choices[0].delta
+    for part in response:
+        delta = part.choices[0].delta
         if delta and delta.content:
             print(delta.content, end="", flush=True)
             final_answer += delta.content
@@ -87,7 +100,9 @@ def generate_answer_streaming(query, chunks):
 # -----------------------------
 # CHATBOT LOOP
 # -----------------------------
-def run_chatbot():
+def run_chatbot(index_file, metadata_file):
+    index, metadata = load_vector_db(index_file, metadata_file)
+
     print("\n🤖 Ready! Ask anything — type 'exit' to quit.\n")
 
     while True:
@@ -96,11 +111,19 @@ def run_chatbot():
             print("👋 Bye!")
             break
 
-        retrieved = retrieve_chunks(query)
+        retrieved = retrieve_chunks(query, index, metadata)
         print("\n📝 Answer:\n")
         generate_answer_streaming(query, retrieved)
         print("\n🔍 Citations refer to chunk numbers.\n")
 
 
+# -----------------------------
+# CLI ENTRY
+# -----------------------------
 if __name__ == "__main__":
-    run_chatbot()
+    parser = argparse.ArgumentParser(description="Chatbot with dynamic vector DB loading")
+    parser.add_argument("--db", default=DEFAULT_INDEX_FILE, help="FAISS index file")
+    parser.add_argument("--meta", default=DEFAULT_METADATA_FILE, help="Metadata JSON file")
+    args = parser.parse_args()
+
+    run_chatbot(index_file=args.db, metadata_file=args.meta)

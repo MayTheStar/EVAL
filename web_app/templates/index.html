@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVAL - Proposal Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Landing Page */
+        .landing-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4a5f7f 0%, #3d4f66 50%, #2d3e50 100%);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-page::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 400px;
+            background: linear-gradient(135deg, #7ec8b8 0%, #6ab5a5 100%);
+            clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%);
+        }
+
+        .landing-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .landing-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0 60px;
+            max-width: 800px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .landing-content h1 {
+            color: white;
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 30px;
+        }
+
+        .landing-content p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        .cta-button {
+            background: #7ec8b8;
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(126, 200, 184, 0.3);
+        }
+
+        .cta-button:hover {
+            background: #6ab5a5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(126, 200, 184, 0.4);
+        }
+
+        .documents-bg {
+            position: absolute;
+            right: 100px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.15;
+        }
+
+        .doc-rect {
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            opacity: 0.6;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: none;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #4a5f7f 0%, #3d4f66 100%);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .user-profile {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: #7ec8b8;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar svg {
+            width: 50px;
+            height: 50px;
+            fill: white;
+        }
+
+        .user-profile h3 {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .user-profile p {
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: #7ec8b8;
+        }
+
+        .nav-item.active {
+            background: rgba(126, 200, 184, 0.15);
+            color: #7ec8b8;
+            border-left: 3px solid #7ec8b8;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            height: 100vh;
+            overflow-y: auto;
+            background: #f5f7fa;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header h2 {
+            color: #2d3e50;
+            font-size: 24px;
+        }
+
+        .content-area {
+            padding: 40px;
+        }
+
+        /* Chatbot Page */
+        .chatbot-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 160px);
+        }
+
+        .chat-title {
+            text-align: center;
+            color: #4a5f7f;
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+
+        .message.user {
+            background: #7ec8b8;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: #f0f4f8;
+            color: #2d3e50;
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c33;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .chat-input-container {
+            background: white;
+            border-radius: 50px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            padding: 15px 20px;
+            font-size: 16px;
+            outline: none;
+            background: transparent;
+        }
+
+        .input-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: #7ec8b8;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .input-button:hover {
+            background: #6ab5a5;
+            transform: scale(1.05);
+        }
+
+        .input-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Upload Page */
+        .upload-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .upload-title {
+            text-align: center;
+            color: #4a5f7f;
+            font-size: 42px;
+            font-weight: 600;
+            margin-bottom: 50px;
+        }
+
+        .upload-area {
+            background: white;
+            border: 3px dashed #d0dae6;
+            border-radius: 12px;
+            padding: 80px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #7ec8b8;
+            background: #f8fafb;
+        }
+
+        .upload-area.dragging {
+            border-color: #7ec8b8;
+            background: #f0f9f7;
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            fill: #7ec8b8;
+        }
+
+        .upload-text {
+            color: #4a5f7f;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #8898aa;
+            font-size: 14px;
+        }
+
+        .upload-buttons {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: #e9ecef;
+            color: #4a5f7f;
+        }
+
+        .btn-cancel:hover {
+            background: #d3d8dd;
+        }
+
+        .btn-import {
+            background: #7ec8b8;
+            color: white;
+        }
+
+        .btn-import:hover {
+            background: #6ab5a5;
+        }
+
+        .btn-import:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .upload-status {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .upload-status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .upload-status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .upload-status.processing {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+
+        .uploaded-files {
+            margin-top: 40px;
+        }
+
+        .uploaded-files h3 {
+            color: #4a5f7f;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .file-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .file-item {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: #f8fafb;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #2d3e50;
+            margin-bottom: 5px;
+        }
+
+        .file-meta {
+            color: #8898aa;
+            font-size: 13px;
+        }
+
+        .file-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .use-file-btn {
+            background: #7ec8b8;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .use-file-btn:hover {
+            background: #6ab5a5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #8898aa;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-rfp-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landingPage" class="landing-page">
+        <nav class="landing-nav">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32">
+                    <rect x="2" y="2" width="28" height="28" rx="4" fill="#7ec8b8"/>
+                    <text x="16" y="22" text-anchor="middle" fill="white" font-size="18" font-weight="bold">E</text>
+                </svg>
+                <span>EVAL</span>
+            </div>
+        </nav>
+
+        <div class="landing-content">
+            <h1>Evaluate Proposals<br>Smarter .. in Seconds</h1>
+            <p>EVAL helps you analyze proposals effortlessly using AI. Get instant scores, compatibility insights, and smart recommendations all in one dashboard.</p>
+            <button class="cta-button" onclick="showDashboard()">Try EVAL Now</button>
+        </div>
+
+        <svg class="documents-bg" width="600" height="600" viewBox="0 0 600 600">
+            <rect class="doc-rect" x="100" y="80" width="180" height="240" rx="8"/>
+            <rect class="doc-rect" x="150" y="120" width="280" height="320" rx="8"/>
+            <rect class="doc-rect" x="320" y="180" width="200" height="280" rx="8"/>
+        </svg>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-profile">
+                <div class="avatar">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <h3>USER PROFILE</h3>
+                <p>ID: 14253658613</p>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-item" onclick="showUploadPage()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                    </svg>
+                    <span>Upload RFP</span>
+                </div>
+                <div class="nav-item" onclick="showChatbot()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    <span>Chatbot Assistant</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#7ec8b8">
+                    <rect x="2" y="2" width="20" height="20" rx="2"/>
+                </svg>
+                <h2 id="pageTitle">EVAL</h2>
+            </div>
+
+            <div class="content-area">
+                <!-- Upload Page -->
+                <div id="uploadPage" class="hidden">
+                    <div class="upload-container">
+                        <h1 class="upload-title">Upload RFP Documents</h1>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" id="fileInput" accept=".pdf" class="hidden">
+                            <svg class="upload-icon" viewBox="0 0 24 24">
+                                <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                            </svg>
+                            <p class="upload-text">Drag & drop or click to choose files</p>
+                            <p class="upload-subtext">⊙ Max file size: 10MB</p>
+                        </div>
+
+                        <div class="upload-buttons">
+                            <button class="btn btn-cancel" onclick="resetUpload()">Cancel</button>
+                            <button class="btn btn-import" id="importBtn" onclick="uploadFile()" disabled>Import</button>
+                        </div>
+
+                        <div id="uploadStatus" class="upload-status hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Chatbot Page -->
+                <div id="chatbotPage" class="hidden">
+                    <div class="chatbot-container">
+                        <h1 class="chat-title">What can I help with?</h1>
+                        
+                        <div id="noRfpWarning" class="no-rfp-warning hidden">
+                            ⚠️ No RFP loaded. Please upload an RFP document first.
+                        </div>
+
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message assistant">
+                                Hello! I'm your RFP assistant. Upload an RFP document first, then ask me anything about it.
+                            </div>
+                        </div>
+
+                        <div class="chat-input-container">
+                            <input 
+                                type="text" 
+                                class="chat-input" 
+                                id="chatInput" 
+                                placeholder="Message .."
+                                onkeypress="handleChatKeypress(event)"
+                            >
+                            <button class="input-button" id="sendBtn" onclick="sendMessage()">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 'landing';
+        let selectedFile = null;
+        let sessionId = null;
+
+        // Page Navigation
+        function showDashboard() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'flex';
+            showUploadPage();
+        }
+
+        function showUploadPage() {
+            document.getElementById('uploadPage').classList.remove('hidden');
+            document.getElementById('chatbotPage').classList.add('hidden');
+            document.getElementById('pageTitle').textContent = 'Upload RFP';
+            updateActiveNav(0);
+            currentPage = 'upload';
+        }
+
+        function showChatbot() {
+            document.getElementById('uploadPage').classList.add('hidden');
+            document.getElementById('chatbotPage').classList.remove('hidden');
+            document.getElementById('pageTitle').textContent = 'Chatbot Assistant';
+            updateActiveNav(1);
+            currentPage = 'chatbot';
+            checkRfpStatus();
+        }
+
+        function updateActiveNav(index) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // File Upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const importBtn = document.getElementById('importBtn');
+        const uploadStatus = document.getElementById('uploadStatus');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file.type !== 'application/pdf') {
+                showUploadStatus('Only PDF files are allowed', 'error');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showUploadStatus('File size exceeds 10MB', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            importBtn.disabled = false;
+            showUploadStatus(`Selected: ${file.name}`, 'success');
+        }
+
+        async function uploadFile() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            importBtn.disabled = true;
+            showUploadStatus('Processing PDF... This may take a moment.', 'processing');
+
+            try {
+                const response = await fetch('http://localhost:5000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    sessionId = data.session_id;
+                    showUploadStatus(
+                        `✅ Success! Processed ${data.chunks_count} chunks in ${data.processing_time}s. You can now use the chatbot.`,
+                        'success'
+                    );
+                    selectedFile = null;
+                    fileInput.value = '';
+                } else {
+                    showUploadStatus(`Error: ${data.error}`, 'error');
+                    importBtn.disabled = false;
+                }
+            } catch (error) {
+                showUploadStatus(`Error: ${error.message}`, 'error');
+                importBtn.disabled = false;
+            }
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            fileInput.value = '';
+            importBtn.disabled = true;
+            uploadStatus.classList.add('hidden');
+        }
+
+        function showUploadStatus(message, type) {
+            uploadStatus.textContent = message;
+            uploadStatus.className = `upload-status ${type}`;
+            uploadStatus.classList.remove('hidden');
+        }
+
+        // Chatbot
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const noRfpWarning = document.getElementById('noRfpWarning');
+
+        async function checkRfpStatus() {
+            if (!sessionId) {
+                noRfpWarning.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/check-rfp?session_id=${sessionId}`);
+                const data = await response.json();
+                
+                if (data.has_rfp) {
+                    noRfpWarning.classList.add('hidden');
+                } else {
+                    noRfpWarning.classList.remove('hidden');
+                }
+            } catch (error) {
+                noRfpWarning.classList.remove('hidden');
+            }
+        }
+
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            if (!sessionId) {
+                addMessage('Please upload an RFP document first.', 'error');
+                return;
+            }
+
+            // Add user message
+            addMessage(message, 'user');
+            chatInput.value = '';
+            sendBtn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:5000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage(data.answer, 'assistant');
+                } else {
+                    addMessage(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function addMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>

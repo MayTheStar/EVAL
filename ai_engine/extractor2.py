@@ -1,38 +1,30 @@
-
-
-
-
 import json
 from openai import OpenAI
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import random
 
 # ----------------------------
 # Load environment variables
 # ----------------------------
-load_dotenv()  # Load variables from .env file
+load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 if not OPENAI_API_KEY:
     raise ValueError("OpenAI API key not found in environment. Please set OPENAI_API_KEY in your .env file.")
 
-# Create client
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # ----------------------------
 # Configuration
 # ----------------------------
-CHUNK_FILE = Path("/Users/rayana/EVAL/ai_engine/output_chunks.txt")
-OUTPUT_FILE = Path("/Users/rayana/EVAL/ai_engine/rfp_chunk_analysis.json")
 MODEL = "gpt-4o-mini"
 TEMPERATURE = 0
 
 # ----------------------------
-# Helper function to read chunks from a file
+# Helper: Read chunks from file
 # ----------------------------
-def read_chunks(file_path):
+def read_chunks(file_path: str):
     """Read chunks separated by ===CHUNK=== markers in a text file"""
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -52,37 +44,28 @@ def read_chunks(file_path):
         processed_chunks.append(text)
     return processed_chunks
 
-
-
 # ----------------------------
-# Analyze a chunk using OpenAI (new RFP prompt)
+# Analyze a single chunk
 # ----------------------------
-def analyze_chunk(chunk_text):
+def analyze_chunk(chunk_text: str):
     prompt = f"""
-You are an expert in analyzing government and corporate RFPs. Your task is to extract **all explicit and implied requirements** from the following text. Focus on capturing actionable information that a vendor must fulfill or that will be used to evaluate proposals.  
+You are an expert in analyzing government and corporate RFPs. Your task is to extract **all explicit and implicit requirements** from the following text.  
 
 Instructions:
 
-1. Extract all **requirements** mentioned in the text. Include both explicit and implied requirements.  
-2. Summarize the text in **2–3 sentences** under "summary". Focus on the key objectives and context of the RFP.  
-3. Identify any **evaluation labels or keywords** describing the type of requirement (e.g., "Technical", "Financial", "Timeline", "Compliance") under "evaluation_labels".  
+1. Extract all **requirements** (explicit + implicit).  
+2. Summarize in **2–3 sentences** under "summary".  
+3. Identify **evaluation labels/keywords** (e.g., "Technical", "Financial", "Timeline", "Compliance") under "evaluation_labels".  
 
-**Output format:** Return a strictly valid JSON object as follows:  
+**Output format:** Return valid JSON:
 
 {{
-    "requirements": [
-        "Requirement 1",
-        "Requirement 2",
-        "Requirement 3"
-    ],
-    "summary": "Short 2-3 sentence summary of the text",
-    "evaluation_labels": [
-        "Label1",
-        "Label2"
-    ]
+    "requirements": [],
+    "summary": "",
+    "evaluation_labels": []
 }}
 
-**Now analyze the following text:**  
+Text to analyze:
 {chunk_text}
 """
     try:
@@ -109,15 +92,20 @@ Instructions:
 # ----------------------------
 # Main processing function
 # ----------------------------
-def main():
-    chunks = read_chunks(CHUNK_FILE)
+def process_chunks(chunk_file_path: str):
+    """
+    Process any chunk file dynamically and return analysis JSON path.
+    """
+    chunk_file = Path(chunk_file_path)
+    if not chunk_file.is_file():
+        raise FileNotFoundError(f"Chunk file not found: {chunk_file_path}")
+
+    chunks = read_chunks(chunk_file)
     print(f"Total chunks available: {len(chunks)}")
 
     all_chunks_data = []
-    START_CHUNK = 0
 
-    for i, chunk_text in enumerate(chunks[START_CHUNK:], start=START_CHUNK):
-
+    for i, chunk_text in enumerate(chunks):
         print(f"\nAnalyzing chunk {i+1}/{len(chunks)}...")
         chunk_result = analyze_chunk(chunk_text)
         chunk_data = {
@@ -130,20 +118,17 @@ def main():
         }
         all_chunks_data.append(chunk_data)
 
-    # Save results
-    output_file = OUTPUT_FILE.parent / "rfp_chunk_analysis_all.json"
+    # Auto-generate output file name based on input
+    output_file = chunk_file.parent / f"{chunk_file.stem.replace(" ", "")}_analysis.json"
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(all_chunks_data, f, indent=4, ensure_ascii=False)
 
-    print(f"\n✓ Analysis of all chunks complete. Results saved to {output_file}")
+    print(f"\n✓ Analysis complete. Results saved to {output_file}")
+    return output_file
 
-# ----------------------------
-# Run main
-# ----------------------------
-if __name__ == "__main__":
-    main()
-
-
-
-
-
+# # ----------------------------
+# # Example usage
+# # ----------------------------
+# if __name__ == "__main__":
+#     test_chunk_file = "/path/to/rfp_chunks.txt"
+#     process_chunks(test_chunk_file)

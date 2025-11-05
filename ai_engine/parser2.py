@@ -14,17 +14,12 @@ from docling.document_converter import DocumentConverter
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
 
-
 # -----------------------
 # Configuration
 # -----------------------
 MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"  # tokenizer for token counts
 MIN_TOKENS = 512
 MAX_TOKENS = 1024
-TXT_OUTPUT = "/Users/rayana/EVAL/ai_engine/output_chunks.txt"
-JSON_OUTPUT = "/Users/rayana/EVAL/ai_engine/output_chunks.json"
-PDF_PATH = "/Users/rayana/EVAL/ai_engine/USask RFP.pdf"
-
 
 # -----------------------
 # Cleaning Function
@@ -33,16 +28,11 @@ def clean_text(text: str) -> str:
     """Light & safe cleaning that preserves structure."""
     if not text:
         return ""
-    # Remove multiple spaces/tabs
     text = re.sub(r"[ \t]+", " ", text)
-    # Fix hyphenated word breaks “develop-\nment” → “development”
     text = re.sub(r"-\s*\n\s*", "", text)
-    # Normalize line breaks: allow max 2 in a row
     text = re.sub(r"\n{3,}", "\n\n", text)
-    # Remove stray bullet characters
     text = re.sub(r"([•·●]+)\s*", "", text)
     return text.strip()
-
 
 # -----------------------
 # Helpers
@@ -55,7 +45,6 @@ def safe_meta(chunk) -> Dict[str, Any]:
         return dict(m)
     except Exception:
         return {}
-
 
 def extract_page_number(chunk) -> Optional[int]:
     meta = safe_meta(chunk)
@@ -75,7 +64,6 @@ def extract_page_number(chunk) -> Optional[int]:
         parent = getattr(parent, "parent", None)
     return None
 
-
 def get_parent_headings(chunk, max_levels: int = 10) -> List[str]:
     heading_keys = [
         "heading", "title", "section_title", "heading_text",
@@ -83,7 +71,6 @@ def get_parent_headings(chunk, max_levels: int = 10) -> List[str]:
     ]
     headings, seen = [], set()
     meta = safe_meta(chunk)
-
     for key in heading_keys:
         if key in meta and meta[key]:
             val = " > ".join(val for val in meta[key]) if isinstance(meta[key], (list, tuple)) else str(meta[key])
@@ -91,7 +78,6 @@ def get_parent_headings(chunk, max_levels: int = 10) -> List[str]:
             if val and val not in seen:
                 headings.append(val)
                 seen.add(val)
-
     parent = getattr(chunk, "parent", None)
     levels = 0
     while parent is not None and levels < max_levels:
@@ -105,9 +91,7 @@ def get_parent_headings(chunk, max_levels: int = 10) -> List[str]:
                     seen.add(val)
         parent = getattr(parent, "parent", None)
         levels += 1
-
     return headings
-
 
 # -----------------------
 # Chunking + Cleaning
@@ -124,7 +108,6 @@ def chunk_document(pdf_path: str, tokenizer) -> List[dict]:
     chunk_dicts = []
 
     for idx, ch in enumerate(raw_chunks):
-        # CLEAN THE TEXT BEFORE token counting & merging
         raw_text = getattr(ch, "text", "") or ""
         text = clean_text(raw_text)
 
@@ -152,9 +135,8 @@ def chunk_document(pdf_path: str, tokenizer) -> List[dict]:
     print(f"✅ Generated {len(chunk_dicts)} raw chunks (cleaned).")
     return chunk_dicts, chunker
 
-
 # -----------------------
-# Merge pass (same code)
+# Merge pass
 # -----------------------
 def merge_small_chunks_forward(chunk_dicts: List[dict],
                                tokenizer,
@@ -228,9 +210,8 @@ def merge_small_chunks_forward(chunk_dicts: List[dict],
     print(f"✅ Merge pass complete: {len(chunk_dicts)} -> {len(merged)} chunks")
     return merged
 
-
 # -----------------------
-# Save outputs (unchanged)
+# Save outputs
 # -----------------------
 def save_txt(merged_chunks: List[dict], out_path: str):
     with open(out_path, "w", encoding="utf-8") as f:
@@ -247,29 +228,24 @@ def save_txt(merged_chunks: List[dict], out_path: str):
             f.write(mc["contextualized_text"] + "\n\n")
     print(f"✅ TXT saved: {out_path}")
 
-
 def save_json(merged_chunks: List[dict], out_path: str):
     with open(out_path, "w", encoding="utf-8") as jf:
         json.dump(merged_chunks, jf, indent=2, ensure_ascii=False)
     print(f"✅ JSON saved: {out_path}")
 
-
 # -----------------------
-# Main
+# Main callable function
 # -----------------------
-def main():
-    print("🔁 Loading tokenizer:", MODEL_ID)
+def process_pdf(pdf_path: str):
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-
-    chunk_dicts, _ = chunk_document(PDF_PATH, tokenizer)
-
+    chunk_dicts, _ = chunk_document(pdf_path, tokenizer)
     merged = merge_small_chunks_forward(chunk_dicts, tokenizer)
 
-    save_txt(merged, TXT_OUTPUT)
-    save_json(merged, JSON_OUTPUT)
+    input_stem = Path(pdf_path).stem
+    txt_out = f"{input_stem.replace(" ", "")}_chunks.txt"
+    json_out = f"{input_stem.replace(" ", "")}_chunks.json"
 
-    print("\n🎯 Done — Clean text + better merging ready for RAG ingestion!")
+    save_txt(merged, txt_out)
+    save_json(merged, json_out)
 
-
-if __name__ == "__main__":
-    main()
+    return txt_out, json_out
