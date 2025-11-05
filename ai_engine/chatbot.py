@@ -42,27 +42,42 @@ def retrieve_chunks(query, top_k=TOP_K_CHUNKS):
     query_vec = np.array([emb], dtype="float32")
     distances, indices = index.search(query_vec, top_k)
 
-    return [
-        {"chunk": metadata[i]["text"], "distance": float(distances[0][j]), "index": i}
-        for j, i in enumerate(indices[0])
-    ]
+    results = []
+    for j, i in enumerate(indices[0]):
+        if i >= len(metadata):
+            continue
+        source_type = metadata[i].get("source_type", "RFP")
+        vendor_name = metadata[i].get("vendor_name")
+        label = f"{vendor_name}" if vendor_name else source_type
+        results.append({
+            "chunk": metadata[i]["text"],
+            "distance": float(distances[0][j]),
+            "index": i,
+            "label": label
+        })
+    return results
+
 
 
 # -----------------------------
 # GPT ANSWER (STREAMING)
 # -----------------------------
 def generate_answer_streaming(query, chunks):
-    context = "\n\n".join(f"(Chunk {c['index']})\n{c['chunk']}" for c in chunks)
+    context = "\n\n".join(
+        f"({c['label']} - Chunk {c['index']})\n{c['chunk']}"
+        for c in chunks
+    )
+
+    system_prompt = (
+        "You are an RFP analysis assistant. "
+        "You have access to both the RFP and multiple vendor responses. "
+        "When answering, clearly state which document each fact comes from, using the label [RFP] or [VendorA], etc. "
+        "If the context lacks information, say 'Not found in the provided documents.'"
+    )
 
     messages = [
-        {"role": "system", "content":
-            "You are an RFP expert. Only answer using the provided context. "
-            "Every claim MUST cite the chunk number like [C3]. "
-            "If no context supports the answer, say: Not in the RFP."
-        },
-        {"role": "user", "content":
-            f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
-        }
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"}
     ]
 
     response = client.chat.completions.create(
@@ -82,6 +97,7 @@ def generate_answer_streaming(query, chunks):
 
     print("\n")
     return final_answer
+
 
 
 # -----------------------------

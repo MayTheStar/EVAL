@@ -13,6 +13,7 @@ from typing import List, Optional, Dict, Any
 from docling.document_converter import DocumentConverter
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
+import argparse
 
 
 # -----------------------
@@ -21,9 +22,9 @@ from transformers import AutoTokenizer
 MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"  # tokenizer for token counts
 MIN_TOKENS = 512
 MAX_TOKENS = 1024
-TXT_OUTPUT = "/Users/rayana/EVAL/ai_engine/output_chunks.txt"
-JSON_OUTPUT = "/Users/rayana/EVAL/ai_engine/output_chunks.json"
-PDF_PATH = "/Users/rayana/EVAL/ai_engine/USask RFP.pdf"
+TXT_OUTPUT = "/Users/maybader/EVAL/ai_engine/output_chunks.txt"
+JSON_OUTPUT = "/Users/maybader/EVAL/ai_engine/output_chunks.json"
+PDF_PATH = "sample_rfp.pdf"
 
 
 # -----------------------
