@@ -3,7 +3,6 @@ from parser2 import process_pdf
 from embeder2 import embed_chunks
 from extractor2 import process_chunks
 from clean_and_enhance_requirements2 import clean_and_enhance_requirements
-from chatbot import run_chatbot  # ✅ IMPORT CHATBOT FUNCTION
 import time
 
 # -----------------------
@@ -12,12 +11,6 @@ import time
 def parse_and_embed(pdf_path: str):
     """
     Parse a PDF into chunks and embed them in FAISS.
-
-    Args:
-        pdf_path (str): Path to the PDF file.
-
-    Returns:
-        dict: Paths of generated files (chunks, embeddings, metadata)
     """
     pdf_file = Path(pdf_path)
     print(f"\n📄 Processing PDF: {pdf_file.name}")
@@ -45,12 +38,10 @@ def process_rfp(rfp_path: str, out_dir: str):
     """
     files = parse_and_embed(rfp_path)
 
-    # Run extractor on RFP
     print("\n🔎 Running extractor on RFP...")
     extractor_output = process_chunks(files["chunks_txt"])
     files["extractor_json"] = extractor_output
 
-    # Run Clean & Enhance pipeline
     print("\n✨ Running Clean & Enhance on extracted requirements...")
     rfp_json_file = Path(files["chunks_json"])
     output_dir = Path(out_dir)
@@ -72,29 +63,24 @@ def process_rfp(rfp_path: str, out_dir: str):
     return files
 
 # -----------------------
-# Example usage
+# 🚀 Main execution entry
 # -----------------------
 if __name__ == "__main__":
-    start_time = time.time() 
+    start_time = time.time()
 
     rfp_pdf = "/Users/rayana/EVAL/ai_engine/USask RFP.pdf"
     output_dir = "/Users/rayana/EVAL/ai_engine/cleaned_rfp"
-  
+
     rfp_files = process_rfp(rfp_pdf, output_dir)
 
     elapsed_time = time.time() - start_time
     hours, rem = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(rem, 60)
 
-    print("\n✅ RFP generated files and outputs:")
+    print("\n📁 RFP generated files and outputs:")
     for key, val in rfp_files.items():
-        print(f"{key}: {val}")
+        print(f"✅ {key}: {val}")
 
     print(f"\n⏱️ Total processing time: {int(hours)}h {int(minutes)}m {seconds:.2f}s")
 
-    # ✅ Start chatbot using generated FAISS index + metadata
-    print("\n🤖 Launching chatbot for RFP interaction...\n")
-    run_chatbot(
-        index_file=rfp_files["faiss_index"],
-        metadata_file=rfp_files["metadata_json"]
-    )
+

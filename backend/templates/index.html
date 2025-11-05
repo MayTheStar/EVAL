@@ -528,20 +528,6 @@
             display: none !important;
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         .no-rfp-warning {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -630,7 +616,7 @@
                                 <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
                             </svg>
                             <p class="upload-text">Drag & drop or click to choose files</p>
-                            <p class="upload-subtext">⊙ Max file size: 10MB</p>
+                            <p class="upload-subtext">⊙ Max file size: 50MB</p>
                         </div>
 
                         <div class="upload-buttons">
@@ -639,6 +625,13 @@
                         </div>
 
                         <div id="uploadStatus" class="upload-status hidden"></div>
+
+                        <div class="uploaded-files">
+                            <h3>📁 Uploaded Documents</h3>
+                            <div class="file-list" id="fileList">
+                                <div class="empty-state">No documents uploaded yet</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -680,7 +673,7 @@
     <script>
         let currentPage = 'landing';
         let selectedFile = null;
-        let sessionId = null;
+        let currentRfpId = null;
 
         // Page Navigation
         function showDashboard() {
@@ -695,6 +688,7 @@
             document.getElementById('pageTitle').textContent = 'Upload RFP';
             updateActiveNav(0);
             currentPage = 'upload';
+            loadUploadedFiles();
         }
 
         function showChatbot() {
@@ -755,8 +749,8 @@
                 return;
             }
 
-            if (file.size > 10 * 1024 * 1024) {
-                showUploadStatus('File size exceeds 10MB', 'error');
+            if (file.size > 50 * 1024 * 1024) {
+                showUploadStatus('File size exceeds 50MB', 'error');
                 return;
             }
 
@@ -775,29 +769,76 @@
             showUploadStatus('Processing PDF... This may take a moment.', 'processing');
 
             try {
-                const response = await fetch('http://localhost:5000/upload', {
+                console.log('Uploading file:', selectedFile.name);
+                const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
                 });
 
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.success) {
-                    sessionId = data.session_id;
+                    currentRfpId = data.rfp_id;
                     showUploadStatus(
-                        `✅ Success! Processed ${data.chunks_count} chunks in ${data.processing_time}s. You can now use the chatbot.`,
+                        `✅ Success! Processed ${data.chunks_count} chunks in ${data.processing_time}s. Document ready for chatbot.`,
                         'success'
                     );
                     selectedFile = null;
                     fileInput.value = '';
+                    importBtn.disabled = true;
+                    loadUploadedFiles();
                 } else {
-                    showUploadStatus(`Error: ${data.error}`, 'error');
+                    console.error('Upload failed:', data.error);
+                    showUploadStatus(`❌ Upload failed: ${data.error}`, 'error');
                     importBtn.disabled = false;
                 }
             } catch (error) {
-                showUploadStatus(`Error: ${error.message}`, 'error');
+                console.error('Upload error:', error);
+                showUploadStatus(`❌ Upload failed: ${error.message}. Check console for details.`, 'error');
                 importBtn.disabled = false;
             }
+        }
+
+        async function loadUploadedFiles() {
+            try {
+                const response = await fetch('/rfps');
+                const data = await response.json();
+
+                const fileList = document.getElementById('fileList');
+                
+                if (data.success && data.rfps.length > 0) {
+                    fileList.innerHTML = data.rfps.map(rfp => `
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-name">📄 ${rfp.original_filename}</div>
+                                <div class="file-meta">
+                                    Uploaded: ${new Date(rfp.upload_date).toLocaleString()} | 
+                                    ${rfp.chunks_count} chunks | 
+                                    ${rfp.processing_time.toFixed(2)}s
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="file-badge">✓ ${rfp.status}</span>
+                                <button class="use-file-btn" onclick="useFileForChat(${rfp.id}, '${rfp.original_filename}')">
+                                    Use in Chat
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    fileList.innerHTML = '<div class="empty-state">No documents uploaded yet</div>';
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+            }
+        }
+
+        function useFileForChat(rfpId, filename) {
+            currentRfpId = rfpId;
+            showChatbot();
+            addMessage(`Now using: ${filename}`, 'assistant');
         }
 
         function resetUpload() {
@@ -820,23 +861,11 @@
         const noRfpWarning = document.getElementById('noRfpWarning');
 
         async function checkRfpStatus() {
-            if (!sessionId) {
+            if (!currentRfpId) {
                 noRfpWarning.classList.remove('hidden');
                 return;
             }
-
-            try {
-                const response = await fetch(`http://localhost:5000/check-rfp?session_id=${sessionId}`);
-                const data = await response.json();
-                
-                if (data.has_rfp) {
-                    noRfpWarning.classList.add('hidden');
-                } else {
-                    noRfpWarning.classList.remove('hidden');
-                }
-            } catch (error) {
-                noRfpWarning.classList.remove('hidden');
-            }
+            noRfpWarning.classList.add('hidden');
         }
 
         function handleChatKeypress(event) {
@@ -850,25 +879,24 @@
             const message = chatInput.value.trim();
             if (!message) return;
 
-            if (!sessionId) {
-                addMessage('Please upload an RFP document first.', 'error');
+            if (!currentRfpId) {
+                addMessage('Please upload an RFP document first or select one from the upload page.', 'error');
                 return;
             }
 
-            // Add user message
             addMessage(message, 'user');
             chatInput.value = '';
             sendBtn.disabled = true;
 
             try {
-                const response = await fetch('http://localhost:5000/chat', {
+                const response = await fetch('/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         message: message,
-                        session_id: sessionId
+                        rfp_id: currentRfpId
                     })
                 });
 
@@ -893,6 +921,13 @@
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+
+        // Load files on page load
+        window.addEventListener('load', async () => {
+            if (currentPage === 'upload') {
+                await loadUploadedFiles();
+            }
+        });
     </script>
 </body>
 </html>
