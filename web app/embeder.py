@@ -125,7 +125,11 @@ def create_embeddings_and_index(chunk_files: List[str],
     print(f"\n✅ Total combined chunks: {len(all_chunks)}")
     
     # Extract texts for embedding
-    chunks_text = [c["contextualized_text"] for c in all_chunks]
+    chunks_text = [
+        c.get("contextualized_text") or c.get("summary") or c.get("text", "")
+        for c in all_chunks
+        if c.get("contextualized_text") or c.get("summary") or c.get("text")
+    ]
     
     # Generate embeddings
     print("✨ Generating OpenAI embeddings...")
