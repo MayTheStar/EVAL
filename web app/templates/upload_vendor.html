@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Vendor Response - EVAL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="40" fill="#4A5F7F"/>
+                            <circle cx="40" cy="30" r="12" fill="white"/>
+                            <path d="M 20 60 Q 40 50, 60 60" fill="white"/>
+                        </svg>
+                    </div>
+                    <h3 class="user-title">USER PROFILE</h3>
+                    <p class="user-id">ID: {{ user_id[:12] }}</p>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('upload_rfp_page') }}" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Upload RFP</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Upload Vendor</span>
+                </a>
+                <a href="{{ url_for('chatbot_page') }}" class="nav-item">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-text">Chatbot Assistant</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🔖</span>
+                    <span class="nav-text">Saved Analyses</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-section">
+                <h4 class="section-title">COMPARE PROPOSALS</h4>
+            </div>
+            
+            <nav class="sidebar-nav sidebar-nav-bottom">
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Criteria Definitions</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">💡</span>
+                    <span class="nav-text">Insights</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="{{ url_for('files_page') }}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">My Profile</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <div class="logo-small">
+                    <span class="logo-text-small">EVAL</span>
+                </div>
+                <h1 class="page-title">Upload Vendor Response</h1>
+            </header>
+            
+            <div class="upload-container">
+                <h2 class="upload-title">Upload Vendor Response Documents</h2>
+                
+                <!-- Vendor Name Input -->
+                <div class="vendor-name-section">
+                    <label for="vendor-name" class="vendor-label">Vendor Name:</label>
+                    <input type="text" id="vendor-name" class="vendor-input" placeholder="Enter vendor name (e.g., VendorA, VendorB)">
+                </div>
+                
+                <div class="upload-box" id="upload-box">
+                    <div class="upload-icon">📦</div>
+                    <p class="upload-text">Drag & drop or click to choose files</p>
+                    <p class="upload-limit">⊙ Max file size: 10MB</p>
+                    <input type="file" id="file-input" accept=".pdf,.doc,.docx" style="display: none;">
+                </div>
+                
+                <div class="upload-info" id="upload-info" style="display: none;">
+                    <div class="file-preview">
+                        <span class="file-name" id="file-name"></span>
+                        <span class="file-size" id="file-size"></span>
+                    </div>
+                    <button class="remove-file-button" id="remove-file">✕</button>
+                </div>
+                
+                <!-- Uploaded Vendors List -->
+                <div class="uploaded-vendors" id="uploaded-vendors">
+                    <h3 class="vendors-title">Uploaded Vendors:</h3>
+                    <div class="vendors-list" id="vendors-list"></div>
+                </div>
+                
+                <div class="upload-actions">
+                    <a href="{{ url_for('dashboard') }}" class="cancel-button">Back to Dashboard</a>
+                    <button class="import-button" id="import-button" disabled>Import</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content modal-success">
+            <div class="success-icon">✓</div>
+            <h3>Success!</h3>
+            <p id="success-message">Vendor response uploaded successfully!</p>
+            <p class="modal-question">Would you like to upload another vendor response?</p>
+            <div class="modal-actions">
+                <button class="modal-button modal-button-secondary" id="done-button">Done</button>
+                <button class="modal-button modal-button-primary" id="another-button">Add Another</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error Modal -->
+    <div class="modal" id="error-modal">
+        <div class="modal-content modal-error">
+            <div class="error-icon">✕</div>
+            <h3>Upload Failed</h3>
+            <p id="error-message"></p>
+            <button class="modal-button modal-button-primary" id="close-error">OK</button>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/upload_vendor.js') }}"></script>
+</body>
+</html>

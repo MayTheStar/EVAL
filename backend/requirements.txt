@@ -1,7 +1,0 @@
-fastapi
-uvicorn[standard]
-python-multipart
-transformers
-sentence-transformers
-torch  # optional but often required for transformers
-docling  # ensure this package name matches your docling installation (pip name may differ)

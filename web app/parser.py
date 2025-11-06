@@ -13,18 +13,14 @@ from typing import List, Optional, Dict, Any
 from docling.document_converter import DocumentConverter
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
-import argparse
 
 
 # -----------------------
-# Configuration
+# Configuration Constants
 # -----------------------
-MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"  # tokenizer for token counts
+MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
 MIN_TOKENS = 512
 MAX_TOKENS = 1024
-TXT_OUTPUT = "/Users/maybader/EVAL/ai_engine/output_chunks.txt"
-JSON_OUTPUT = "/Users/maybader/EVAL/ai_engine/output_chunks.json"
-PDF_PATH = "sample_rfp.pdf"
 
 
 # -----------------------
@@ -36,12 +32,12 @@ def clean_text(text: str) -> str:
         return ""
     # Remove multiple spaces/tabs
     text = re.sub(r"[ \t]+", " ", text)
-    # Fix hyphenated word breaks “develop-\nment” → “development”
+    # Fix hyphenated word breaks "develop-\nment" → "development"
     text = re.sub(r"-\s*\n\s*", "", text)
     # Normalize line breaks: allow max 2 in a row
     text = re.sub(r"\n{3,}", "\n\n", text)
     # Remove stray bullet characters
-    text = re.sub(r"([•·●]+)\s*", "", text)
+    text = re.sub(r"([•·◦]+)\s*", "", text)
     return text.strip()
 
 
@@ -72,7 +68,7 @@ def extract_page_number(chunk) -> Optional[int]:
             return pm["page_number"]
         for alt in ("page", "page_num", "pg", "page_index", "pageno"):
             if alt in pm:
-                return alt
+                return pm[alt]
         parent = getattr(parent, "parent", None)
     return None
 
@@ -113,13 +109,26 @@ def get_parent_headings(chunk, max_levels: int = 10) -> List[str]:
 # -----------------------
 # Chunking + Cleaning
 # -----------------------
-def chunk_document(pdf_path: str, tokenizer) -> List[dict]:
+def chunk_document(pdf_path: str, tokenizer, min_tokens: int = MIN_TOKENS, 
+                   max_tokens: int = MAX_TOKENS) -> tuple[List[dict], HybridChunker]:
+    """
+    Convert and chunk a document with cleaning.
+    
+    Args:
+        pdf_path: Path to the document file
+        tokenizer: Tokenizer instance for token counting
+        min_tokens: Minimum tokens per chunk
+        max_tokens: Maximum tokens per chunk
+        
+    Returns:
+        Tuple of (chunk_dicts, chunker)
+    """
     print(f"📄 Converting document: {pdf_path}")
     converter = DocumentConverter()
     doc = converter.convert(pdf_path).document
 
     print("🧩 Chunking with HybridChunker...")
-    chunker = HybridChunker(tokenizer=tokenizer, max_tokens=MAX_TOKENS, merge_peers=True)
+    chunker = HybridChunker(tokenizer=tokenizer, max_tokens=max_tokens, merge_peers=True)
 
     raw_chunks = list(chunker.chunk(doc))
     chunk_dicts = []
@@ -155,13 +164,24 @@ def chunk_document(pdf_path: str, tokenizer) -> List[dict]:
 
 
 # -----------------------
-# Merge pass (same code)
+# Merge pass
 # -----------------------
 def merge_small_chunks_forward(chunk_dicts: List[dict],
                                tokenizer,
                                min_tokens: int = MIN_TOKENS,
                                max_tokens: int = MAX_TOKENS) -> List[dict]:
-
+    """
+    Merge small chunks forward until they meet minimum token requirements.
+    
+    Args:
+        chunk_dicts: List of chunk dictionaries
+        tokenizer: Tokenizer instance
+        min_tokens: Minimum tokens per merged chunk
+        max_tokens: Maximum tokens per merged chunk
+        
+    Returns:
+        List of merged chunk dictionaries
+    """
     merged = []
     buffer = None
 
@@ -231,9 +251,10 @@ def merge_small_chunks_forward(chunk_dicts: List[dict],
 
 
 # -----------------------
-# Save outputs (unchanged)
+# Save outputs
 # -----------------------
 def save_txt(merged_chunks: List[dict], out_path: str):
+    """Save chunks to a text file."""
     with open(out_path, "w", encoding="utf-8") as f:
         for idx, mc in enumerate(merged_chunks):
             f.write("="*60 + "\n")
@@ -250,27 +271,53 @@ def save_txt(merged_chunks: List[dict], out_path: str):
 
 
 def save_json(merged_chunks: List[dict], out_path: str):
+    """Save chunks to a JSON file."""
     with open(out_path, "w", encoding="utf-8") as jf:
         json.dump(merged_chunks, jf, indent=2, ensure_ascii=False)
     print(f"✅ JSON saved: {out_path}")
 
 
 # -----------------------
-# Main
+# Main processing function
 # -----------------------
-def main():
-    print("🔁 Loading tokenizer:", MODEL_ID)
+def process_document(input_path: str, output_txt_path: str, output_json_path: str,
+                    min_tokens: int = MIN_TOKENS, max_tokens: int = MAX_TOKENS) -> List[dict]:
+    """
+    Process a document through chunking and merging pipeline.
+    
+    Args:
+        input_path: Path to input document
+        output_txt_path: Path for text output
+        output_json_path: Path for JSON output
+        min_tokens: Minimum tokens per chunk
+        max_tokens: Maximum tokens per chunk
+        
+    Returns:
+        List of merged chunks
+    """
+    print(f"🔍 Loading tokenizer: {MODEL_ID}")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
 
-    chunk_dicts, _ = chunk_document(PDF_PATH, tokenizer)
+    chunk_dicts, _ = chunk_document(input_path, tokenizer, min_tokens, max_tokens)
+    merged = merge_small_chunks_forward(chunk_dicts, tokenizer, min_tokens, max_tokens)
 
-    merged = merge_small_chunks_forward(chunk_dicts, tokenizer)
+    save_txt(merged, output_txt_path)
+    save_json(merged, output_json_path)
 
-    save_txt(merged, TXT_OUTPUT)
-    save_json(merged, JSON_OUTPUT)
-
-    print("\n🎯 Done — Clean text + better merging ready for RAG ingestion!")
+    print(f"\n🎯 Document processed: {len(merged)} chunks created")
+    return merged
 
 
 if __name__ == "__main__":
-    main()
+    # Example usage
+    import sys
+    if len(sys.argv) > 1:
+        pdf_path = sys.argv[1]
+        output_base = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("output")
+        process_document(
+            pdf_path,
+            str(output_base / "chunks.txt"),
+            str(output_base / "chunks.json")
+        )
+    else:
+        print("Usage: python parser.py <input_file> [output_directory]")
