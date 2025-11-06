@@ -250,7 +250,7 @@ def process_documents():
         results = system.run_full_pipeline(
             rfp_file=rfp_file,
             vendor_files=vendor_files,
-            skip_extraction=True,  # Skip for faster processing
+            skip_extraction=False,  # Skip for faster processing
             run_chatbot=False  # Don't run interactive mode
         )
         

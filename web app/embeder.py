@@ -145,11 +145,12 @@ def create_embeddings_and_index(chunk_files: List[str],
     metadata = []
     for c in all_chunks:
         metadata.append({
-            "text": c["contextualized_text"],
+            "text": c.get("contextualized_text") or c.get("summary") or c.get("text", ""),
             "source_type": c.get("source_type", "RFP"),
             "vendor_name": c.get("vendor_name", None),
             "page_number": c.get("page_number", None),
-            "headings": c.get("headings", [])
+            "headings": c.get("headings", []),
+            "is_capability_analysis": "_capability_analysis" in str(Path(file_path).name)
         })
     
     with open(metadata_file, "w", encoding="utf-8") as f:
@@ -187,8 +188,21 @@ def create_embeddings_from_rfp_and_vendors(rfp_chunks_file: str,
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
-    # Combine all chunk files
+    # Combine RFP + vendor chunk files + vendor capability analyses (if any)
     all_files = [rfp_chunks_file] + vendor_chunks_files
+
+    # Search for capability analysis files in same directory
+    capability_files = []
+    for vf in vendor_chunks_files:
+        vendor_name = Path(vf).stem.replace("_chunks", "")
+        possible_path = Path(vf).parent / f"{vendor_name}_capability_analysis.json"
+        if possible_path.exists():
+            capability_files.append(str(possible_path))
+
+    if capability_files:
+        print(f"➕ Including {len(capability_files)} vendor capability analysis files in embeddings")
+        all_files += capability_files
+
     
     vector_db_file = str(output_path / vector_db_name)
     metadata_file = str(output_path / metadata_name)
