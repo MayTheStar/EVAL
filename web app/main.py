@@ -16,7 +16,8 @@ from vendor_parser import process_vendor_response, process_multiple_vendors
 from extractor import analyze_document_chunks, analyze_rfp_and_vendors
 from embeder import create_embeddings_from_rfp_and_vendors
 from chatbot import create_chatbot
-from vendor_capability_extractor import analyze_all_vendors
+from vendor_capability_extractor import VendorCapabilityExtractor
+
 
 
 
@@ -275,10 +276,10 @@ class RFPAnalysisSystem:
             
         # Step 3.5: Analyze Vendor Capabilities (optional)
         vendor_json_folder = self.chunks_dir  # or wherever the vendor chunks are stored
-        print("\n" + "=" * 60)
-        print("🧠 STEP 3.5: Extracting Vendor Capabilities & Differentiators")
-        print("=" * 60)
-        analyze_all_vendors(str(vendor_json_folder))
+        print("\n🧠 STEP 3.5: Extracting Vendor Capabilities & Differentiators")
+        extractor = VendorCapabilityExtractor(api_key=self.api_key)
+        extractor.analyze_folder(str(self.chunks_dir))
+
     
         
         # Step 4: Create Embeddings
