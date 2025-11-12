@@ -171,9 +171,41 @@ It intelligently extracts requirements, compares vendor capabilities, and provid
 
 ---
 
-## 🧰 Setup & Installation
+**## 🧰 Setup & Installation**
 
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/MayTheStar/EVAL.git
 cd EVAL
+```
+
+### 2. Create and activate a virtual environment
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Set environment variables
+Create a `.env` file in the root directory:
+
+```
+OPENAI_API_KEY=your_openai_api_key
+SECRET_KEY=eval-secret-key
+DATABASE_URL=your_database_url
+```
+
+### 5. Run the web app
+```bash
+cd "web app"
+uvicorn web_app.main:app --reload
+```
+
+or (for Flask)
+```bash
+python app.py
+```
