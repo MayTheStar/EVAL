@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Assistant - EVAL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="40" fill="#4A5F7F" />
+                            <circle cx="40" cy="30" r="12" fill="white" />
+                            <path d="M 20 60 Q 40 50, 60 60" fill="white" />
+                        </svg>
+                    </div>
+                    <h3 class="user-title">USER PROFILE</h3>
+                    <p class="user-id">ID: {{ user_id[:12] }}</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('upload_rfp_page') }}" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Upload RFP</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Evaluation Results</span>
+                </a>
+                <a href="{{ url_for('chatbot_page') }}" class="nav-item active">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-text">Chatbot Assistant</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">🔖</span>
+                    <span class="nav-text">Saved Analyses</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-section">
+                <h4 class="section-title">COMPARE PROPOSALS</h4>
+            </div>
+
+            <nav class="sidebar-nav sidebar-nav-bottom">
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Criteria Definitions</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">💡</span>
+                    <span class="nav-text">Insights</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="{{ url_for('files_page') }}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">My Profile</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <div class="logo-small">
+                    <span class="logo-text-small">EVAL</span>
+                </div>
+                <h1 class="page-title">Chatbot Assistant</h1>
+            </header>
+
+            <div class="chat-container">
+                <div class="chat-welcome" id="chat-welcome">
+                    <h2 class="chat-welcome-title">What can I help with?</h2>
+                    <p class="chat-welcome-subtitle">Ask me anything about your RFP and vendor responses</p>
+                </div>
+
+                <div class="chat-messages" id="chat-messages"></div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea id="chat-input" class="chat-input" placeholder="Message .." rows="1"></textarea>
+                        <button class="attach-button" title="Attach file">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 2v16M2 10h16" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                        </button>
+                        <button class="send-button" id="send-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 20l18-8-18-8v6l12 2-12 2v6z" />
+                            </svg>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+</body>
+
+</html>
