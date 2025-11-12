@@ -170,8 +170,9 @@ It intelligently extracts requirements, compares vendor capabilities, and provid
 | `main.py` | Orchestrates the full end-to-end pipeline |
 
 ---
+```
 
-**## 🧰 Setup & Installation**
+# 🧰 Setup & Installation
 
 ### 1. Clone the repository
 ```bash
@@ -209,3 +210,4 @@ or (for Flask)
 ```bash
 python app.py
 ```
+
