@@ -123,42 +123,61 @@ function addMessage(sender, content, isTemporary = false) {
 
 function formatBotResponse(answer, sources) {
     const container = document.createElement('div');
-    
-    // Answer text
+    container.className = 'bot-response-container';
+
+    // --- Format text ---
     const answerDiv = document.createElement('div');
     answerDiv.className = 'message-text';
-    answerDiv.textContent = answer;
+
+    // Convert Markdown-like formatting into HTML
+    let formatted = answer
+        .replace(/^\[/, '')                          // remove starting bracket
+        .replace(/\]$/, '')                          // remove ending bracket
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // bold
+        .replace(/\n\n/g, '</p><p>')                 // paragraphs
+        .replace(/\n/g, '<br>')                      // single line break
+        .replace(/(\d+)\.\s/g, '<br><strong>$1.</strong> '); // numbered points
+
+    // Wrap paragraphs
+    formatted = `<p>${formatted}</p>`;
+
+    answerDiv.innerHTML = formatted;
     container.appendChild(answerDiv);
-    
-    // Sources
+
+    // --- 📚 Sources (restored to original style) ---
     if (sources && sources.length > 0) {
         const sourcesDiv = document.createElement('div');
         sourcesDiv.className = 'message-sources';
-        
+
+        // Title same as original
         const sourcesTitle = document.createElement('div');
         sourcesTitle.className = 'sources-title';
         sourcesTitle.textContent = '📚 Sources:';
         sourcesDiv.appendChild(sourcesTitle);
-        
+
+        // Source items same structure and tone as before
         sources.forEach((source, index) => {
             const sourceItem = document.createElement('div');
             sourceItem.className = 'source-item';
-            
-            let sourceText = `${index + 1}. ${source.label}`;
+
+            let sourceText = `${index + 1}. ${source.label || 'Unnamed Source'}`;
             if (source.page) {
                 sourceText += ` (Page ${source.page})`;
             }
-            sourceText += ` - Distance: ${source.distance.toFixed(4)}`;
-            
+            if (source.distance !== undefined) {
+                sourceText += ` - Distance: ${source.distance.toFixed(4)}`;
+            }
+
             sourceItem.textContent = sourceText;
             sourcesDiv.appendChild(sourceItem);
         });
-        
+
         container.appendChild(sourcesDiv);
     }
-    
+
     return container;
 }
+
 
 // Add CSS for typing indicator
 const style = document.createElement('style');

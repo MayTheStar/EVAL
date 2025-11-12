@@ -63,23 +63,34 @@ class ChunkAnalyzer:
             )
         
         prompt = f"""
-{role_description}
+        {role_description}
 
-Instructions:
-1. Extract key actionable points or requirements.
-2. Summarize the text in 2–3 sentences under "summary".
-3. Identify key focus areas under "evaluation_labels" (e.g., Technical, Financial, Compliance).
+        Instructions:
+        1. Extract key actionable points or requirements.
+        2. Summarize the text in 2–3 sentences under "summary".
+        3. Identify key focus areas under "evaluation_labels" (e.g., Technical, Financial, Compliance).
 
-Return valid JSON:
-{{
-    "requirements": [],
-    "summary": "",
-    "evaluation_labels": []
-}}
+        Return valid JSON with the following structure:
+        {{
+          "requirements": [
+           {{
+            "text": "",
+            "type": "mandatory | optional | informational"
+            }}
+         ],
+         "summary": "",
+         "evaluation_labels": []
+        }}
 
-Now analyze:
-{chunk_text}
-"""
+        Classify as:
+        - "mandatory" if it contains strong obligation cues (must, shall, required to)
+        - "optional" if it uses softer language (should, recommended, preferred)
+        - "informational" for background or context info.
+
+        Now analyze:
+        {chunk_text}
+        """
+
         
         try:
             response = self.client.chat.completions.create(

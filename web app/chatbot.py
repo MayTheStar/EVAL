@@ -1,10 +1,10 @@
 """
-RFP Comparative Chatbot
-========================
+RFP Comparative Chatbot (Compliance-Aware)
+==========================================
 
 This module defines the `RFPChatbot` class — an intelligent chatbot for analyzing
 and comparing RFP requirements and multiple vendor responses, including structured
-capability analyses.
+capability analyses and mandatory-compliance filtering.
 
 It integrates with the web app through `create_chatbot()`, which returns a ready-to-use
 chatbot instance that can answer user queries via Flask routes.
@@ -27,16 +27,49 @@ DEFAULT_EMBEDDING_MODEL = "text-embedding-3-large"
 DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 DEFAULT_TOP_K = 8
 DEFAULT_MAX_TOKENS = 2000
+COMPLIANCE_DIR = "outputs/compliance"
 
 
+# -----------------------------
+# Helper
+# -----------------------------
+def load_compliance_results(folder: str = COMPLIANCE_DIR) -> Dict[str, Dict]:
+    """
+    Load compliance results for all vendors.
+    Returns a dict: {vendor_name: {"compliant": bool, "missing_requirements": [...]} }
+    """
+    results = {}
+    folder_path = Path(folder)
+    if not folder_path.exists():
+        print("⚠️ No compliance directory found — assuming all vendors are compliant.")
+        return results
+
+    for file in folder_path.glob("*_compliance.json"):
+        vendor_name = file.stem.replace("_compliance", "")
+        try:
+            with open(file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                results[vendor_name] = {
+                    "compliant": data.get("compliant", False),
+                    "missing_requirements": data.get("missing_requirements", []),
+                }
+        except Exception as e:
+            print(f"⚠️ Error reading compliance file {file.name}: {e}")
+    print(f"📋 Loaded compliance info for {len(results)} vendors.")
+    return results
+
+
+# -----------------------------
+# Chatbot Class
+# -----------------------------
 class RFPChatbot:
     """
     Chatbot for querying and comparing RFP and vendor documents.
 
     This class uses a Retrieval-Augmented Generation (RAG) approach:
     - Retrieves the most relevant text chunks from FAISS embeddings.
+    - Skips non-compliant vendors automatically.
     - Uses OpenAI GPT models to generate structured comparative answers.
-    - Integrates both raw document chunks and capability analysis summaries.
     """
 
     def __init__(
@@ -48,19 +81,8 @@ class RFPChatbot:
         openai_model: str = DEFAULT_OPENAI_MODEL,
         top_k: int = DEFAULT_TOP_K,
         max_tokens: int = DEFAULT_MAX_TOKENS,
+        compliance_dir: str = COMPLIANCE_DIR,
     ):
-        """
-        Initialize the chatbot.
-
-        Args:
-            vector_db_file (str): Path to FAISS index file.
-            metadata_file (str): Path to metadata JSON file.
-            api_key (str, optional): OpenAI API key. If None, loads from .env file.
-            embedding_model (str): Embedding model used for query encoding.
-            openai_model (str): GPT model used for answer generation.
-            top_k (int): Number of chunks to retrieve per query.
-            max_tokens (int): Maximum token limit for the response.
-        """
         if api_key is None:
             load_dotenv()
             api_key = os.getenv("OPENAI_API_KEY")
@@ -73,126 +95,102 @@ class RFPChatbot:
         self.top_k = top_k
         self.max_tokens = max_tokens
 
-        # Load FAISS index + metadata
+        # Load FAISS + metadata
         self.index = faiss.read_index(vector_db_file)
         with open(metadata_file, "r", encoding="utf-8") as f:
             self.metadata = json.load(f)
 
-        print(f"✅ Loaded FAISS index with {self.index.ntotal} vectors")
-        print(f"✅ Loaded metadata entries: {len(self.metadata)}")
+        # Load compliance info
+        self.compliance_results = load_compliance_results(compliance_dir)
+
+        print(f"✅ FAISS index loaded with {self.index.ntotal} vectors")
+        print(f"✅ Metadata entries: {len(self.metadata)}")
+        print(f"✅ Compliance awareness enabled for {len(self.compliance_results)} vendors")
 
     # -----------------------------
-    # Chunk Retrieval
+    # Retrieval
     # -----------------------------
     def retrieve_chunks(self, query: str, top_k: Optional[int] = None) -> List[Dict]:
         """
-        Retrieve the most relevant chunks for a given query.
-
-        Args:
-            query (str): User query.
-            top_k (int, optional): Number of top chunks to retrieve. Defaults to class value.
-
-        Returns:
-            List[Dict]: Retrieved chunks, including metadata such as vendor name and type.
+        Retrieve most relevant chunks for a query, skipping non-compliant vendors.
         """
         if top_k is None:
             top_k = self.top_k
 
-        emb = self.client.embeddings.create(
-            model=self.embedding_model,
-            input=query
-        ).data[0].embedding
-
+        emb = self.client.embeddings.create(model=self.embedding_model, input=query).data[0].embedding
         query_vec = np.array([emb], dtype="float32")
-        distances, indices = self.index.search(query_vec, top_k)
+        distances, indices = self.index.search(query_vec, top_k * 3)  # fetch more, we'll filter later
 
         results = []
         for j, i in enumerate(indices[0]):
             if i >= len(self.metadata):
                 continue
-
             meta = self.metadata[i]
-            source_type = meta.get("source_type", "RFP")
             vendor_name = meta.get("vendor_name")
-            is_capability = meta.get("is_capability_analysis", False)
+            if vendor_name and vendor_name in self.compliance_results:
+                if not self.compliance_results[vendor_name]["compliant"]:
+                    continue  # skip non-compliant vendors entirely
 
-            if is_capability:
-                label = f"{vendor_name or 'Vendor'} (Capability Analysis)"
-            else:
-                label = vendor_name if vendor_name else source_type
-
+            label = vendor_name or meta.get("source_type", "RFP")
             results.append({
                 "chunk": meta.get("text", ""),
                 "distance": float(distances[0][j]),
                 "index": i,
                 "label": label,
-                "source_type": source_type,
+                "source_type": meta.get("source_type", "RFP"),
                 "vendor_name": vendor_name,
-                "is_capability_analysis": is_capability
             })
+
+            if len(results) >= top_k:
+                break
         return results
 
     # -----------------------------
-    # Prompt Building
+    # Prompt Construction
     # -----------------------------
     def _build_prompts(self, query: str, chunks: List[Dict]) -> tuple:
         """
-        Build the system and user prompts for GPT based on retrieved chunks.
-
-        Args:
-            query (str): User's question.
-            chunks (List[Dict]): Retrieved context chunks.
-
-        Returns:
-            tuple: (system_prompt, user_prompt)
+        Build system/user prompts for GPT.
         """
-        context = "\n\n".join(
-            f"[{c['label']} - Chunk {c['index']}]\n{c['chunk']}"
-            for c in chunks
-        )
+        context = "\n\n".join(f"[{c['label']} - Chunk {c['index']}]\n{c['chunk']}" for c in chunks)
+
+        # Add awareness of disqualified vendors
+        disqualified_info = ""
+        disqualified_vendors = [v for v, r in self.compliance_results.items() if not r["compliant"]]
+        if disqualified_vendors:
+            for v in disqualified_vendors:
+                missing = self.compliance_results[v].get("missing_requirements", [])
+                disqualified_info += f"\nVendor {v} was disqualified for missing mandatory requirements such as:\n"
+                disqualified_info += "\n".join(f" - {m}" for m in missing[:3]) + "\n"
 
         system_prompt = (
-            "You are an advanced RFP evaluation assistant. "
-            "You have access to the RFP document (requirements), vendor responses (capabilities), "
-            "and structured capability analyses. "
-            "Your job is to interpret and compare them intelligently.\n\n"
-            "Guidelines:\n"
-            "- Clearly tag each reference as [RFP], [VendorA], [VendorA (Capability Analysis)], etc.\n"
-            "- When comparing, discuss similarities, differences, and which vendor fulfills each requirement best.\n"
-            "- Start each reasoning block with the RFP requirement, then evaluate vendor responses.\n"
-            "- Be factual, concise, and objective.\n"
-            "- If the answer is missing, write: 'Not found in the provided documents.'\n"
+            "You are an advanced RFP evaluation assistant.\n"
+            "You have access to the RFP document and vendor responses.\n"
+            "Some vendors may have been disqualified for missing mandatory requirements.\n"
+            "Answer carefully and mention compliance status where relevant.\n"
+            "When comparing vendors, include only compliant ones unless the user explicitly asks about others.\n"
+            + disqualified_info
         )
 
         user_prompt = f"""
-Context documents:
+Context Documents:
 {context}
 
 Question:
 {query}
 
-Now provide your comparative evaluation.
-Include structured reasoning and citations.
+Provide your analysis based on the context above.
+If a vendor was disqualified, explain why if relevant.
 """
-
         return system_prompt, user_prompt
 
     # -----------------------------
-    # GPT Response Generation
+    # GPT Calls
     # -----------------------------
-    def generate_answer_streaming(self, query: str, chunks: List[Dict]) -> str:
+    def _ask_gpt(self, system_prompt: str, user_prompt: str, stream: bool = True) -> str:
         """
-        Generate an answer using GPT in streaming mode (prints live tokens).
-
-        Args:
-            query (str): User question.
-            chunks (List[Dict]): Retrieved chunks for context.
-
-        Returns:
-            str: Complete GPT-generated answer.
+        Send prompts to OpenAI GPT and get a response.
         """
-        system_prompt, user_prompt = self._build_prompts(query, chunks)
-
         response = self.client.chat.completions.create(
             model=self.openai_model,
             messages=[
@@ -201,91 +199,53 @@ Include structured reasoning and citations.
             ],
             max_tokens=self.max_tokens,
             temperature=0.2,
-            stream=True
+            stream=stream
         )
 
-        final_answer = ""
-        for part in response:
-            delta = part.choices[0].delta
-            if delta and delta.content:
-                print(delta.content, end="", flush=True)
-                final_answer += delta.content
-        print("\n")
-        return final_answer
-
-    def generate_answer(self, query: str, chunks: List[Dict]) -> str:
-        """
-        Generate an answer using GPT (non-streaming).
-
-        Args:
-            query (str): User question.
-            chunks (List[Dict]): Retrieved context chunks.
-
-        Returns:
-            str: Final GPT-generated answer text.
-        """
-        system_prompt, user_prompt = self._build_prompts(query, chunks)
-
-        response = self.client.chat.completions.create(
-            model=self.openai_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            max_tokens=self.max_tokens,
-            temperature=0.2
-        )
-        return response.choices[0].message.content
+        answer = ""
+        if stream:
+            for part in response:
+                delta = part.choices[0].delta
+                if delta and delta.content:
+                    print(delta.content, end="", flush=True)
+                    answer += delta.content
+            print("\n")
+        else:
+            answer = response.choices[0].message.content
+        return answer
 
     # -----------------------------
-    # Main Query Interface
+    # Public Interface
     # -----------------------------
     def query(self, query: str, stream: bool = True, top_k: Optional[int] = None) -> tuple:
         """
-        Execute a full query — retrieve chunks, run GPT, and return the result.
-
-        Args:
-            query (str): User query text.
-            stream (bool): Whether to stream GPT output in real-time.
-            top_k (int, optional): Number of chunks to retrieve.
-
-        Returns:
-            tuple: (answer_text, retrieved_chunks)
+        Execute a full query: retrieve chunks → send to GPT → return answer.
         """
         chunks = self.retrieve_chunks(query, top_k)
-        answer = (
-            self.generate_answer_streaming(query, chunks)
-            if stream else
-            self.generate_answer(query, chunks)
-        )
+        system_prompt, user_prompt = self._build_prompts(query, chunks)
+        answer = self._ask_gpt(system_prompt, user_prompt, stream)
         return answer, chunks
 
     # -----------------------------
-    # CLI Interactive Loop
+    # CLI Mode
     # -----------------------------
     def run_interactive(self):
         """
-        Launch an interactive console mode for manual testing.
-
-        The user can type questions and receive comparative answers
-        about the RFP and vendor responses.
+        Console mode for testing.
         """
-        print("\n🤖 Ready! Ask anything about the RFP or vendor responses — type 'exit' to quit.\n")
+        print("\n🤖 Chatbot ready — ask anything about RFPs or vendors (type 'exit' to quit)\n")
         while True:
             query = input("Your Question: ").strip()
             if query.lower() == "exit":
-                print("👋 Bye!")
+                print("👋 Goodbye!")
                 break
             if not query:
                 continue
-            chunks = self.retrieve_chunks(query)
-            print("\n🧩 Analyzing documents...\n")
-            self.generate_answer_streaming(query, chunks)
-            print("\n🔍 Citations refer to [RFP], [VendorA], etc.\n")
+            self.query(query, stream=True)
 
 
 # -----------------------------
-# Factory Function
+# Factory
 # -----------------------------
 def create_chatbot(
     vector_db_file: str,
@@ -295,22 +255,9 @@ def create_chatbot(
     openai_model: str = DEFAULT_OPENAI_MODEL,
     top_k: int = DEFAULT_TOP_K,
     max_tokens: int = DEFAULT_MAX_TOKENS,
+    compliance_dir: str = COMPLIANCE_DIR,
 ) -> RFPChatbot:
-    """
-    Factory function that creates and returns a chatbot instance.
-
-    Args:
-        vector_db_file (str): Path to FAISS index file.
-        metadata_file (str): Path to metadata JSON file.
-        api_key (str, optional): OpenAI API key.
-        embedding_model (str): Embedding model name.
-        openai_model (str): OpenAI GPT model name.
-        top_k (int): Number of chunks to retrieve per query.
-        max_tokens (int): Max tokens per response.
-
-    Returns:
-        RFPChatbot: Fully initialized chatbot instance.
-    """
+    """Factory function to build a compliance-aware chatbot."""
     return RFPChatbot(
         vector_db_file=vector_db_file,
         metadata_file=metadata_file,
@@ -319,6 +266,7 @@ def create_chatbot(
         openai_model=openai_model,
         top_k=top_k,
         max_tokens=max_tokens,
+        compliance_dir=compliance_dir,
     )
 
 

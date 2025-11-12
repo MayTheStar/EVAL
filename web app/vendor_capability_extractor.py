@@ -134,7 +134,11 @@ Analyze this vendor content:
         if not vendor_path.exists():
             raise ValueError(f"Vendor folder not found: {vendor_folder}")
 
-        vendor_files = list(vendor_path.glob("*_chunks.json"))
+        vendor_files = [
+            f for f in vendor_path.glob("*_chunks.json")
+            if not f.stem.lower().startswith("rfp_")
+        ]
+
         if not vendor_files:
             print("⚠️ No vendor chunk files found.")
             return {}
@@ -143,6 +147,7 @@ Analyze this vendor content:
         for vf in vendor_files:
             vendor_name = Path(vf).stem.replace("_chunks", "")
             all_results[vendor_name] = self.analyze_file(str(vf), output_dir)
+
 
         print("\n🎯 All vendor capability analyses completed!")
         return all_results

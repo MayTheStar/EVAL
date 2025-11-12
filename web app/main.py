@@ -17,6 +17,9 @@ from extractor import analyze_document_chunks, analyze_rfp_and_vendors
 from embeder import create_embeddings_from_rfp_and_vendors
 from chatbot import create_chatbot
 from vendor_capability_extractor import VendorCapabilityExtractor
+import compliance_checker
+
+
 
 
 
@@ -128,7 +131,7 @@ class RFPAnalysisSystem:
             chunks = process_vendor_response(
                 vendor_file,
                 vendor_name,
-                str(json_output),
+                self.chunks_dir,
                 self.min_tokens,
                 self.max_tokens
             )
@@ -280,9 +283,43 @@ class RFPAnalysisSystem:
         extractor = VendorCapabilityExtractor(api_key=self.api_key)
         extractor.analyze_folder(str(self.chunks_dir))
 
-    
+        # ⚖️ STEP 4: Evaluate Compliance Before Embeddings
+        print("\n⚖️ STEP 4: Evaluating Compliance Against Mandatory Requirements")
+        rfp_analysis_file = str(self.analysis_dir / "rfp_chunk_analysis.json")
+
+        # Collect all vendor analysis files automatically
+        vendor_analysis_files = {}
+        for file in self.analysis_dir.glob("*_analysis.json"):
+            name = file.stem.replace("_analysis", "")
+            if name.lower() != "rfp_chunk":
+                vendor_analysis_files[name] = str(file)
+
+        compliance_checker.evaluate_all_vendors(rfp_analysis_file, vendor_analysis_files, "outputs/compliance")
+
+        # 🚫 STEP 4.5: Filter out non-compliant vendors before embedding
+        from compliance_checker import load_json
+        compliance_dir = Path("outputs/compliance")
+        non_compliant_vendors = []
+
+        for comp_file in compliance_dir.glob("*_compliance.json"):
+            data = load_json(comp_file)
+            vendor_name = comp_file.stem.replace("_compliance", "")
+            if not data.get("compliant", False):
+                non_compliant_vendors.append(vendor_name)
+
+        if non_compliant_vendors:
+            print(f"⚠️ The following vendors are non-compliant and will be skipped: {', '.join(non_compliant_vendors)}")
+
+        # Filter vendor_json_paths list to include only compliant ones
+        vendor_json_paths = [
+            v["json"] for name, v in vendor_results.items()
+            if name not in non_compliant_vendors
+        ]
+
+
+
         
-        # Step 4: Create Embeddings
+        # Step 5: Create Embeddings
         vendor_json_paths = [v["json"] for v in vendor_results.values()]
         faiss_path, metadata_path = self.create_embeddings(
             rfp_results["json"],
@@ -293,7 +330,7 @@ class RFPAnalysisSystem:
             "metadata": metadata_path
         }
         
-        # Step 5: Prepare Chatbot
+        # Step 6: Prepare Chatbot
         chatbot = self.prepare_chatbot(faiss_path, metadata_path)
         results["chatbot"] = chatbot
         
