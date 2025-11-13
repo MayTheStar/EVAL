@@ -2,7 +2,7 @@
 Vendor Response Parser (Dynamic Upload Version)
 Processes vendor response documents (PDF, DOC, DOCX)
 using the same chunking pipeline as RFP parsing.
-Now fully dynamic — no hardcoded file paths or folder scans.
+
 """
 
 import json
@@ -60,7 +60,7 @@ def process_vendor_response(
 
         # Step 3: Add vendor metadata
         for c in merged:
-            c["source_type"] = "VendorResponse"
+            # c["source_type"] = "VendorResponse"
             c["vendor_name"] = vendor_name
 
         # Step 4: Save to JSON output file

@@ -7,13 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('send-button');
     const chatMessages = document.getElementById('chat-messages');
     const chatWelcome = document.getElementById('chat-welcome');
-    
+
     // Auto-resize textarea
     chatInput.addEventListener('input', () => {
         chatInput.style.height = 'auto';
         chatInput.style.height = chatInput.scrollHeight + 'px';
     });
-    
+
     // Send on Enter (Shift+Enter for new line)
     chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMessage();
         }
     });
-    
+
     // Send button click
     sendButton.addEventListener('click', sendMessage);
 });
@@ -29,27 +29,27 @@ document.addEventListener('DOMContentLoaded', () => {
 async function sendMessage() {
     const chatInput = document.getElementById('chat-input');
     const query = chatInput.value.trim();
-    
+
     if (!query || isProcessing) return;
-    
+
     // Clear input
     chatInput.value = '';
     chatInput.style.height = 'auto';
-    
+
     // Hide welcome message
     const chatWelcome = document.getElementById('chat-welcome');
     if (chatWelcome) {
         chatWelcome.style.display = 'none';
     }
-    
+
     // Add user message
     addMessage('user', query);
-    
+
     // Show typing indicator
-    const typingId = addMessage('bot', '<div class="typing-indicator">Thinking...</div>', true);
-    
+    const typingId = addMessage('bot', '<div class="typing-indicator">Thinking</div>', true);
+
     isProcessing = true;
-    
+
     try {
         const response = await fetch('/api/chat', {
             method: 'POST',
@@ -58,29 +58,29 @@ async function sendMessage() {
             },
             body: JSON.stringify({ query })
         });
-        
+
         const data = await response.json();
-        
+
         // Remove typing indicator
         const typingElement = document.getElementById(typingId);
         if (typingElement) {
             typingElement.remove();
         }
-        
+
         if (data.success) {
             // Add bot response
             addMessage('bot', formatBotResponse(data.answer, data.sources));
         } else {
             addMessage('bot', `Error: ${data.message}`);
         }
-        
+
     } catch (error) {
         // Remove typing indicator
         const typingElement = document.getElementById(typingId);
         if (typingElement) {
             typingElement.remove();
         }
-        
+
         addMessage('bot', `Error: ${error.message}`);
     } finally {
         isProcessing = false;
@@ -90,34 +90,34 @@ async function sendMessage() {
 function addMessage(sender, content, isTemporary = false) {
     const chatMessages = document.getElementById('chat-messages');
     const messageId = 'msg-' + Date.now();
-    
+
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}`;
     if (isTemporary) {
         messageDiv.id = messageId;
     }
-    
+
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
     avatar.textContent = sender === 'user' ? '👤' : '🤖';
-    
+
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
-    
+
     if (typeof content === 'string') {
         messageContent.innerHTML = content;
     } else {
         messageContent.appendChild(content);
     }
-    
+
     messageDiv.appendChild(avatar);
     messageDiv.appendChild(messageContent);
-    
+
     chatMessages.appendChild(messageDiv);
-    
+
     // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    
+
     return messageId;
 }
 
@@ -131,15 +131,19 @@ function formatBotResponse(answer, sources) {
 
     // Convert Markdown-like formatting into HTML
     let formatted = answer
-        .replace(/^\[/, '')                          // remove starting bracket
-        .replace(/\]$/, '')                          // remove ending bracket
+        .replace(/^\[/, '')                               // remove starting bracket
+        .replace(/\]$/, '')                               // remove ending bracket
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // bold
-        .replace(/\n\n/g, '</p><p>')                 // paragraphs
-        .replace(/\n/g, '<br>')                      // single line break
+        .replace(/^####\s?(.*)$/gm, '<h4>$1</h4>')         // #### headings
+        .replace(/^###\s?(.*)$/gm, '<h3>$1</h3>')          // ### headings
+        .replace(/^##\s?(.*)$/gm, '<h2>$1</h2>')           // ## headings
+        .replace(/^#\s?(.*)$/gm, '<h1>$1</h1>')            // # headings
+        .replace(/\n\n/g, '</p><p>')                       // paragraph breaks
+        .replace(/\n/g, '<br>')                            // single line break
         .replace(/(\d+)\.\s/g, '<br><strong>$1.</strong> '); // numbered points
 
-    // Wrap paragraphs
     formatted = `<p>${formatted}</p>`;
+
 
     answerDiv.innerHTML = formatted;
     container.appendChild(answerDiv);

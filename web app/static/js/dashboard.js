@@ -103,7 +103,7 @@ async function processDocuments() {
         modal.classList.remove('show');
         
         if (data.success) {
-            alert(`Success! ${data.message}\n\nRFP chunks: ${data.chunks_count.rfp}\nVendor chunks: ${data.chunks_count.vendors}`);
+            alert(`Success! ${data.message}`);
             checkStatus();
         } else {
             alert(`Error: ${data.message}`);

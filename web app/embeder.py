@@ -136,7 +136,12 @@ def create_embeddings_and_index(chunk_files: List[str],
             print(f"⏭️ Skipping {vendor_name} (non-compliant vendor)")
             continue
 
+        if "_analysis" in file_path:
+            print(f"⏭️ Skipping analysis file (not chunk file): {file_path}")
+            continue
+
         chunks = load_chunks_from_json(file_path)
+
         print(f"   ➕ Loaded {len(chunks)} chunks from {file_name}")
         for chunk in chunks:
             chunk["vendor_name"] = vendor_name if vendor_name.lower() != "rfp" else None
@@ -146,10 +151,12 @@ def create_embeddings_and_index(chunk_files: List[str],
 
     # Extract texts
     chunks_text = [
-        c.get("contextualized_text") or c.get("summary") or c.get("text", "")
+        c.get("contextualized_text") 
+        or c.get("summary") 
+        or c.get("text", "")
         for c in all_chunks
-        if c.get("contextualized_text") or c.get("summary") or c.get("text")
     ]
+
 
     # Generate embeddings
     embedder = DocumentEmbedder(api_key=api_key, model=model)
@@ -212,16 +219,7 @@ def create_embeddings_from_rfp_and_vendors(rfp_chunks_file: str,
             continue
         all_files.append(vf)
 
-    # Include vendor capability analysis files if they exist
-    capability_files = []
-    for vf in vendor_chunks_files:
-        vendor_name = Path(vf).stem.replace("_chunks", "")
-        possible_path = Path(vf).parent / f"{vendor_name}_capability_analysis.json"
-        if possible_path.exists():
-            capability_files.append(str(possible_path))
-    if capability_files:
-        print(f"➕ Including {len(capability_files)} vendor capability analysis files.")
-        all_files += capability_files
+    
 
     vector_db_file = str(output_path / vector_db_name)
     metadata_file = str(output_path / metadata_name)

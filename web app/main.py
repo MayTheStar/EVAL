@@ -10,18 +10,26 @@ from typing import List, Optional, Dict
 import argparse
 from dotenv import load_dotenv
 
-# Import all modules
+# ⭐ DB integration: try to import backend DB (optional, non-breaking)
+try:
+    BACKEND_DIR = Path(__file__).resolve().parents[1] / "backend"
+    sys.path.insert(0, str(BACKEND_DIR))
+    from core.database import SessionLocal
+    from core.core_models import RFPDocument, VendorDocument, DocumentChunk
+    DB_AVAILABLE = True
+except Exception as _db_err:
+    # If backend is not available, we just run without DB integration
+    SessionLocal = None
+    RFPDocument = VendorDocument = DocumentChunk = None
+    DB_AVAILABLE = False
+
+
 from parser import process_document
 from vendor_parser import process_vendor_response, process_multiple_vendors
 from extractor import analyze_document_chunks, analyze_rfp_and_vendors
 from embeder import create_embeddings_from_rfp_and_vendors
 from chatbot import create_chatbot
-from vendor_capability_extractor import VendorCapabilityExtractor
 import compliance_checker
-
-
-
-
 
 
 class RFPAnalysisSystem:
@@ -31,7 +39,10 @@ class RFPAnalysisSystem:
                  output_dir: str = "output",
                  openai_api_key: Optional[str] = None,
                  min_tokens: int = 512,
-                 max_tokens: int = 1024):
+                 max_tokens: int = 1024,
+                 project_id: Optional[str] = None,
+                 rfp_id: Optional[str] = None,
+                 vendor_doc_ids: Optional[Dict[str, str]] = None):
         """
         Initialize the RFP Analysis System.
         
@@ -40,6 +51,9 @@ class RFPAnalysisSystem:
             openai_api_key: OpenAI API key (loads from .env if None)
             min_tokens: Minimum tokens per chunk
             max_tokens: Maximum tokens per chunk
+            project_id: Optional project UUID (for DB integration)
+            rfp_id: Optional RFPDocument UUID (for DB integration)
+            vendor_doc_ids: Optional mapping {vendor_name: vendor_doc_id} (for DB integration)
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -54,6 +68,12 @@ class RFPAnalysisSystem:
         self.api_key = openai_api_key
         self.min_tokens = min_tokens
         self.max_tokens = max_tokens
+
+        # ⭐ DB-related IDs (optional)
+        self.project_id = project_id
+        self.rfp_id = rfp_id
+        
+        self.vendor_doc_ids = vendor_doc_ids or {}
         
         # Output paths
         self.chunks_dir = self.output_dir / "chunks"
@@ -102,7 +122,44 @@ class RFPAnalysisSystem:
         )
         
         print(f"\n✅ RFP processing complete: {len(chunks)} chunks created")
-        
+
+        # ⭐ DB integration: Save RFP chunks if DB and RFPDocument exist
+        if DB_AVAILABLE and DocumentChunk is not None:
+            try:
+                db = SessionLocal()
+                rfp_doc_id = self.rfp_id
+
+                # If rfp_id not passed, try to look it up by filepath
+                if rfp_doc_id is None and RFPDocument is not None:
+                    rfp_record = db.query(RFPDocument).filter(
+                        RFPDocument.filepath == str(Path(rfp_file))
+                    ).first()
+                    if rfp_record:
+                        rfp_doc_id = rfp_record.rfp_id
+
+                if rfp_doc_id is not None:
+                    for idx, chunk in enumerate(chunks):
+                        db_chunk = DocumentChunk(
+                            document_id=rfp_doc_id,
+                            document_type="rfp",
+                            chunk_index=idx,
+                            original_text=chunk.get("text") or chunk.get("content") or "",
+                            contextualized_text=chunk.get("contextualized_text"),
+                            token_count=chunk.get("token_count"),
+                            page_number=chunk.get("page"),
+                            headings=chunk.get("headings"),
+                            orig_indices=chunk.get("orig_indices"),
+                            meta_info=None
+                        )
+                        db.add(db_chunk)
+                    db.commit()
+                    print(f"🗄️  Saved {len(chunks)} RFP chunks to database")
+                else:
+                    print("⚠️ DB: Could not determine rfp_id, skipping RFP chunks DB save")
+                db.close()
+            except Exception as e:
+                print(f"⚠️ DB: Error saving RFP chunks: {e}")
+
         return {
             "txt": str(txt_output),
             "json": str(json_output),
@@ -140,6 +197,43 @@ class RFPAnalysisSystem:
                 "json": str(json_output),
                 "chunks": chunks
             }
+
+            # ⭐ DB integration: Save vendor chunks if DB and VendorDocument exist
+            if DB_AVAILABLE and DocumentChunk is not None:
+                try:
+                    db = SessionLocal()
+                    vendor_doc_id = self.vendor_doc_ids.get(vendor_name)
+
+                    # If not passed, try to look up by filepath
+                    if vendor_doc_id is None and VendorDocument is not None:
+                        v_record = db.query(VendorDocument).filter(
+                            VendorDocument.filepath == str(Path(vendor_file))
+                        ).first()
+                        if v_record:
+                            vendor_doc_id = v_record.vendor_doc_id
+
+                    if vendor_doc_id is not None:
+                        for idx, chunk in enumerate(chunks):
+                            db_chunk = DocumentChunk(
+                                document_id=vendor_doc_id,
+                                document_type="vendor",
+                                chunk_index=idx,
+                                original_text=chunk.get("text") or chunk.get("content") or "",
+                                contextualized_text=chunk.get("contextualized_text"),
+                                token_count=chunk.get("token_count"),
+                                page_number=chunk.get("page"),
+                                headings=chunk.get("headings"),
+                                orig_indices=chunk.get("orig_indices"),
+                                meta_info=None
+                            )
+                            db.add(db_chunk)
+                        db.commit()
+                        print(f"🗄️  Saved {len(chunks)} chunks for vendor '{vendor_name}' to database")
+                    else:
+                        print(f"⚠️ DB: Could not determine vendor_doc_id for '{vendor_name}', skipping DB save")
+                    db.close()
+                except Exception as e:
+                    print(f"⚠️ DB: Error saving vendor chunks for '{vendor_name}': {e}")
         
         print(f"\n✅ Vendor processing complete: {len(vendor_results)} vendors processed")
         
@@ -168,6 +262,7 @@ class RFPAnalysisSystem:
         )
         
         print(f"\n✅ Extraction complete: RFP + {len(results.get('vendors', {}))} vendors analyzed")
+        
         
         return results
     
@@ -204,6 +299,7 @@ class RFPAnalysisSystem:
         print(f"\n✅ Embeddings created successfully")
         print(f"   📊 FAISS index: {faiss_path}")
         print(f"   📋 Metadata: {metadata_path}")
+        
         
         return str(faiss_path), str(metadata_path)
     
@@ -277,48 +373,52 @@ class RFPAnalysisSystem:
         else:
             print("\n⏭️  Skipping extraction step")
             
-        # Step 3.5: Analyze Vendor Capabilities (optional)
-        vendor_json_folder = self.chunks_dir  # or wherever the vendor chunks are stored
-        print("\n🧠 STEP 3.5: Extracting Vendor Capabilities & Differentiators")
-        extractor = VendorCapabilityExtractor(api_key=self.api_key)
-        extractor.analyze_folder(str(self.chunks_dir))
+        
+        ## ⚖️ STEP 3.5: Evaluating Compliance Before Embeddings
+        print("\n⚖️ STEP 3.5: Evaluating Compliance Against Mandatory Requirements")
 
-        # ⚖️ STEP 4: Evaluate Compliance Before Embeddings
-        print("\n⚖️ STEP 4: Evaluating Compliance Against Mandatory Requirements")
+        # Path to the RFP analysis JSON (created in Step 3)
         rfp_analysis_file = str(self.analysis_dir / "rfp_chunk_analysis.json")
 
-        # Collect all vendor analysis files automatically
+        # Automatically collect vendor analysis files
         vendor_analysis_files = {}
         for file in self.analysis_dir.glob("*_analysis.json"):
             name = file.stem.replace("_analysis", "")
             if name.lower() != "rfp_chunk":
                 vendor_analysis_files[name] = str(file)
 
-        compliance_checker.evaluate_all_vendors(rfp_analysis_file, vendor_analysis_files, "outputs/compliance")
+        # Use the NEW ComplianceChecker (class-based, flexible)
+        checker = compliance_checker.ComplianceChecker(
+            model_name="all-MiniLM-L6-v2",   # optional (default)
+            threshold=0.75                    # optional (default)
+        )
 
-        # 🚫 STEP 4.5: Filter out non-compliant vendors before embedding
-        from compliance_checker import load_json
-        compliance_dir = Path("outputs/compliance")
-        non_compliant_vendors = []
+        # Evaluate all vendors
+        compliance_results = checker.evaluate_all_vendors(
+            rfp_analysis_file,
+            vendor_analysis_files,
+            output_dir=str(self.output_dir / "compliance")
+        )
 
-        for comp_file in compliance_dir.glob("*_compliance.json"):
-            data = load_json(comp_file)
-            vendor_name = comp_file.stem.replace("_compliance", "")
-            if not data.get("compliant", False):
-                non_compliant_vendors.append(vendor_name)
+        # 🚫 STEP 4.5: Identify vendors that are NON-compliant
+        non_compliant_vendors = [
+            name for name, data in compliance_results.items()
+            if not data.get("compliant", False)
+        ]
 
         if non_compliant_vendors:
-            print(f"⚠️ The following vendors are non-compliant and will be skipped: {', '.join(non_compliant_vendors)}")
+            print(f"⚠️ These vendors are NON-compliant and will be skipped: "
+                  f"{', '.join(non_compliant_vendors)}")
+        else:
+            print("✅ All vendors are fully compliant with mandatory requirements")
 
-        # Filter vendor_json_paths list to include only compliant ones
+        # Filter vendor JSON list to ONLY compliant vendors
         vendor_json_paths = [
             v["json"] for name, v in vendor_results.items()
             if name not in non_compliant_vendors
         ]
 
 
-
-        
         # Step 5: Create Embeddings
         vendor_json_paths = [v["json"] for v in vendor_results.values()]
         faiss_path, metadata_path = self.create_embeddings(
@@ -426,6 +526,7 @@ def main():
         openai_api_key=args.api_key,
         min_tokens=args.min_tokens,
         max_tokens=args.max_tokens
+        # project_id, rfp_id, vendor_doc_ids can be passed here later if needed
     )
     
     # Run pipeline
