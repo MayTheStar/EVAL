@@ -1,19 +1,19 @@
 """
-RFP Hybrid Chunker + Token-based Merge Pass + Text Cleaning
-- Cleans extracted text BEFORE token counting & merging
-- Preserves Docling structural segmentation
-- Merges small chunks forward until >= MIN_TOKENS or would exceed MAX_TOKENS
+RFP & Vendor Parser (Unified)
+- Uses Docling + HybridChunker
+- Same chunk structure as the original working version
+- RFP: process_document(...)
+- Vendor: process_vendor_response(...) / process_multiple_vendors(...)
 """
 
 import json
 import re
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 from docling.document_converter import DocumentConverter
 from docling.chunking import HybridChunker
 from transformers import AutoTokenizer
-
 
 # -----------------------
 # Configuration Constants
@@ -109,19 +109,15 @@ def get_parent_headings(chunk, max_levels: int = 10) -> List[str]:
 # -----------------------
 # Chunking + Cleaning
 # -----------------------
-def chunk_document(pdf_path: str, tokenizer, min_tokens: int = MIN_TOKENS, 
-                   max_tokens: int = MAX_TOKENS) -> tuple[List[dict], HybridChunker]:
+def chunk_document(
+    pdf_path: str,
+    tokenizer,
+    min_tokens: int = MIN_TOKENS,
+    max_tokens: int = MAX_TOKENS
+) -> tuple[List[dict], HybridChunker]:
     """
     Convert and chunk a document with cleaning.
-    
-    Args:
-        pdf_path: Path to the document file
-        tokenizer: Tokenizer instance for token counting
-        min_tokens: Minimum tokens per chunk
-        max_tokens: Maximum tokens per chunk
-        
-    Returns:
-        Tuple of (chunk_dicts, chunker)
+    Returns (chunk_dicts, chunker)
     """
     print(f"📄 Converting document: {pdf_path}")
     converter = DocumentConverter()
@@ -134,7 +130,6 @@ def chunk_document(pdf_path: str, tokenizer, min_tokens: int = MIN_TOKENS,
     chunk_dicts = []
 
     for idx, ch in enumerate(raw_chunks):
-        # CLEAN THE TEXT BEFORE token counting & merging
         raw_text = getattr(ch, "text", "") or ""
         text = clean_text(raw_text)
 
@@ -156,7 +151,6 @@ def chunk_document(pdf_path: str, tokenizer, min_tokens: int = MIN_TOKENS,
             "token_count": token_count,
             "page_number": extract_page_number(ch),
             "headings": get_parent_headings(ch),
-            "orig_chunk": ch
         })
 
     print(f"✅ Generated {len(chunk_dicts)} raw chunks (cleaned).")
@@ -166,21 +160,15 @@ def chunk_document(pdf_path: str, tokenizer, min_tokens: int = MIN_TOKENS,
 # -----------------------
 # Merge pass
 # -----------------------
-def merge_small_chunks_forward(chunk_dicts: List[dict],
-                               tokenizer,
-                               min_tokens: int = MIN_TOKENS,
-                               max_tokens: int = MAX_TOKENS) -> List[dict]:
+def merge_small_chunks_forward(
+    chunk_dicts: List[dict],
+    tokenizer,
+    min_tokens: int = MIN_TOKENS,
+    max_tokens: int = MAX_TOKENS
+) -> List[dict]:
     """
     Merge small chunks forward until they meet minimum token requirements.
-    
-    Args:
-        chunk_dicts: List of chunk dictionaries
-        tokenizer: Tokenizer instance
-        min_tokens: Minimum tokens per merged chunk
-        max_tokens: Maximum tokens per merged chunk
-        
-    Returns:
-        List of merged chunk dictionaries
+    Returns merged chunk dicts with SAME structure as before.
     """
     merged = []
     buffer = None
@@ -278,22 +266,18 @@ def save_json(merged_chunks: List[dict], out_path: str):
 
 
 # -----------------------
-# Main processing function
+# RFP main processing function
 # -----------------------
-def process_document(input_path: str, output_txt_path: str, output_json_path: str,
-                    min_tokens: int = MIN_TOKENS, max_tokens: int = MAX_TOKENS) -> List[dict]:
+def process_document(
+    input_path: str,
+    output_txt_path: str,
+    output_json_path: str,
+    min_tokens: int = MIN_TOKENS,
+    max_tokens: int = MAX_TOKENS
+) -> List[dict]:
     """
-    Process a document through chunking and merging pipeline.
-    
-    Args:
-        input_path: Path to input document
-        output_txt_path: Path for text output
-        output_json_path: Path for JSON output
-        min_tokens: Minimum tokens per chunk
-        max_tokens: Maximum tokens per chunk
-        
-    Returns:
-        List of merged chunks
+    Process an RFP document.
+    Returns merged chunks (NO vendor_name).
     """
     print(f"🔍 Loading tokenizer: {MODEL_ID}")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
@@ -308,8 +292,99 @@ def process_document(input_path: str, output_txt_path: str, output_json_path: st
     return merged
 
 
+# ===============================================================
+# ✅ Vendor processing (mدموج من vendor_parser.py)
+# ===============================================================
+def process_vendor_response(
+    vendor_file_path: Union[str, Path],
+    vendor_name: str,
+    output_dir: Union[str, Path],
+    min_tokens: int = MIN_TOKENS,
+    max_tokens: int = MAX_TOKENS,
+) -> List[Dict]:
+    """
+    Process a single uploaded vendor response file (PDF, DOC, DOCX).
+    Creates {vendor_name}_chunks.json with SAME structure + vendor_name field.
+    """
+    vendor_file_path = Path(vendor_file_path)
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    output_json_path = output_dir / f"{vendor_name}_chunks.json"
+    print(f"\n🔹 Processing uploaded vendor file: {vendor_file_path.name}")
+
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+
+    # Step 1: Chunk document using same RFP logic
+    chunks, _ = chunk_document(str(vendor_file_path), tokenizer, min_tokens, max_tokens)
+
+    # Step 2: Merge small chunks
+    merged = merge_small_chunks_forward(chunks, tokenizer, min_tokens, max_tokens)
+
+    # Step 3: Add vendor metadata
+    for c in merged:
+        c["vendor_name"] = vendor_name
+
+    # Step 4: Save to JSON output file
+    save_json(merged, str(output_json_path))
+    print(f"✅ Saved processed chunks for {vendor_name} → {output_json_path}")
+
+    return merged
+
+
+def process_multiple_vendors(
+    vendor_files: List[tuple],
+    output_dir: Union[str, Path],
+    min_tokens: int = MIN_TOKENS,
+    max_tokens: int = MAX_TOKENS,
+) -> Dict[str, List[Dict]]:
+    """
+    Process multiple uploaded vendor files.
+    vendor_files = [(file_path, vendor_name), ...]
+    """
+    print("📦 Starting dynamic vendor response parsing...")
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results: Dict[str, List[Dict]] = {}
+
+    for file_path, vendor_name in vendor_files:
+        try:
+            chunks = process_vendor_response(
+                vendor_file_path=file_path,
+                vendor_name=vendor_name,
+                output_dir=output_dir,
+                min_tokens=min_tokens,
+                max_tokens=max_tokens,
+            )
+            results[vendor_name] = chunks
+        except Exception as e:
+            print(f"⚠️ Skipping {vendor_name} due to error: {e}")
+            continue
+
+    print(f"\n🎯 Successfully processed {len(results)} vendor responses!")
+    return results
+
+
+def process_vendor_folder(
+    vendor_folder: str,
+    output_dir: str,
+    min_tokens: int = MIN_TOKENS,
+    max_tokens: int = MAX_TOKENS,
+) -> Dict[str, List[Dict]]:
+    """
+    Legacy API name – kept only to avoid crashes if something calls it.
+    """
+    raise NotImplementedError(
+        "⚠️ process_vendor_folder() is deprecated. "
+        "Use process_multiple_vendors([(file_path, vendor_name), ...], output_dir) instead."
+    )
+
+
+# -----------------------
+# CLI (optional)
+# -----------------------
 if __name__ == "__main__":
-    # Example usage
     import sys
     if len(sys.argv) > 1:
         pdf_path = sys.argv[1]

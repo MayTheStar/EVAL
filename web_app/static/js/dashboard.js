@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetch('/api/get-status')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.chatbot_ready) {
+                    if (data.chatbot_ready || data.processed) {
                         window.location.href = '/chatbot';
                     } else {
                         alert('Please upload and process documents first!');
@@ -67,6 +67,7 @@ async function checkStatus() {
                 chatbotNav.style.pointerEvents = 'auto';
             }
         }
+
         
     } catch (error) {
         console.error('Error checking status:', error);

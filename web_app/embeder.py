@@ -129,7 +129,11 @@ def create_embeddings_and_index(chunk_files: List[str],
     for file_path in chunk_files:
         path_obj = Path(file_path)
         file_name = path_obj.name
-        vendor_name = path_obj.stem.replace("_analysis", "").replace("_chunks", "")
+        # First file is RFP → mark vendor_name=None
+        if file_path == chunk_files[0]:
+            vendor_name = None
+        else:
+            vendor_name = path_obj.stem.replace("_analysis", "").replace("_chunks", "")
 
         # Skip non-compliant vendors
         if compliance_results and vendor_name in compliance_results and not compliance_results[vendor_name]:
@@ -144,7 +148,10 @@ def create_embeddings_and_index(chunk_files: List[str],
 
         print(f"   ➕ Loaded {len(chunks)} chunks from {file_name}")
         for chunk in chunks:
-            chunk["vendor_name"] = vendor_name if vendor_name.lower() != "rfp" else None
+            if vendor_name:
+                chunk["vendor_name"] = vendor_name
+            else:
+                chunk["vendor_name"] = None
         all_chunks.extend(chunks)
     
     print(f"\n✅ Total included chunks: {len(all_chunks)}")
@@ -169,7 +176,7 @@ def create_embeddings_and_index(chunk_files: List[str],
     index.add(embeddings)
 
     # Save FAISS index
-    faiss.write_index(index, vector_db_file)
+    faiss.write_index(index, str(vector_db_file))
     print(f"✅ FAISS index saved: {vector_db_file}")
 
     # Save metadata
@@ -188,7 +195,8 @@ def create_embeddings_and_index(chunk_files: List[str],
     print(f"✅ Metadata saved: {metadata_file}")
 
     print(f"\n🎯 Embedded {len(chunks_text)} total chunks | Dimension: {dimension}")
-    return index, metadata
+    return str(vector_db_file), str(metadata_file)
+
 
 
 def create_embeddings_from_rfp_and_vendors(rfp_chunks_file: str,

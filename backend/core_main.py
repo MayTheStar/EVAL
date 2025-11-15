@@ -1,9 +1,10 @@
 # main.py
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
-from core.database import engine, Base, get_db
-from core.core_config import settings
-from core import models
+from backend.core.database import engine, Base, get_db
+from backend.core.core_config import settings
+from backend.core import core_models as models
+ 
 
 # إنشاء كل الجداول إذا لم تكن موجودة
 Base.metadata.create_all(bind=engine)

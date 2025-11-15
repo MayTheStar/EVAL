@@ -1,0 +1,528 @@
+============================================================
+CHUNK 0
+============================================================
+Pages: None
+Tokens: 813
+Headings: Generative Artificial Intelligence (AI) Software Proposal > Prepared for > Table of Contents > Prepared by > CORPORATE STRUCTURE and OWNERSHIP > 1.1 List of Owners: > 1.2 Organizational Chart: > RELEVANT EXPERIENCE > 2.1 Company Strengths & Edtech Background
+
+Generative Artificial Intelligence (AI) Software Proposal
+The University of Saskatchewan is modernizing its IT infrastructure to boost efficiency and support teaching, research, and administration for its approximately 25,000 students and 5,000 faculty and staff. This includes consolidating existing AI subscriptions into a managed ecosystem. USask seeks specialized AI service providers to enhance innovation and data protection. This RFP aims to establish multiple master service agreements with Pre-Qualified Suppliers to deliver tailored AI platform services across Colleges, Administrative groups and Affiliates.
+
+Prepared for
+University of Saskatchewan Procurement, University of Saskatchewan 110 Maintenance Rd, Saskatoon, SK S7N 5C5 Attention: Dennis Orellana Procurement Services Lead
+
+Table of Contents
+Table of Contents
+
+Prepared by
+Beam Data Ltd Shaohua Zhang CEO, BeamData 180 Bloor St W #1003, Toronto, ON M5S 1T6 Shaohua@beamdata.ca (647) 459-8172
+1.1 List of Owners:
+3
+2.1 Company Strengths & Edtech Background
+4
+2.2 Enterprise Product Experience
+5
+Our AI Product
+5
+2.3 Data & AI Project Delivery Experience
+6
+2.3.1 AI Projects
+6
+2.3.2 Data Analytics & Engineering Projects
+6
+2.3.3 Software Development Projects
+6
+2.4 Training Experience
+7
+2.4.1 Collaboration with Universities & Academies
+7
+2.4.2 Enterprise Training
+7
+4.1 Overview Service Architecture
+12
+4.1.1 Pain Points & Proposed Solutions
+12
+4.1.2 AI Infrastructure
+15
+4.1.3 AI Framework (chat, RAG, agent)
+16
+4.2 AI Platform Services
+16
+4.2.1 AI Chat & Data Analysis
+16
+4.2.2 Compliance with Intellectual Property and Privacy Regulations
+17
+4.2.3 Infrastructure Protection
+17
+4.3 Optional Services
+18
+4.3.1 AI Model Customization
+18
+4.3.2 AI Enabling Infrastructure
+18
+4.4 Professional Services
+19
+4.4.1 AI Consulting Service
+19
+4.5 University Benefits & Indigenous Participation
+21
+4.5.1 University Benefits
+21
+4.5.2 Indigenous Person Scholarships or skills training
+21
+01
+
+CORPORATE STRUCTURE and OWNERSHIP
+Corporate structure and Organizational Chart
+
+1.1 List of Owners:
+Name
+Role
+Shaohua Zhang
+Co-Founder and CEO
+Eric Liu
+Co-Founder and Head of Research and BI
+Jack Luo
+Co-Founder and CFO
+Rong Li
+Co-Founder and COO
+
+1.2 Organizational Chart:
+02
+
+RELEVANT EXPERIENCE
+Examples of Past Work Aligned to Requirements
+
+2.1 Company Strengths & Edtech Background
+Beam Data Ltd., established in 2015, in partnership with WeCloudData, founded in 2016, excels as a product and service-focused organization with deep expertise in educational technology (edtech) and artificial intelligence (AI) solutions, tailored for complex environments like higher education.
+Our core strength lies in delivering innovative AI-driven platforms, such as learning management systems (LMS) and administrative tools, that enhance learning outcomes and streamline
+operations for institutions. With over 9 years of team experience in machine learning (ML) and AI, we have developed impactful edtech solutions, including WeCloudDataÕs Learning Management System (LMS), which integrates generative AI for personalized assessments and content recommendations, serving thousands of learners globally. Our work with the AI71 Academy in the UAE involved building an LMS with AI integration for skills training, supporting the UAE governmentÕs educational initiatives. We also developed the Galaxy app, an AIpowered platform for school administration, automating tasks like student enrollment and scheduling with text-to-SQL capabilities, directly applicable to USaskÕs need for efficient administrative workflows.
+Additionally, our WeCareer platform provides AI-driven mentorship, matching students with industry professionals to enhance career readiness, aligning with USaskÕs student experience goals. Our [REDACTED: funding source] consultation for [REDACTED: client organization] optimized an educational content platform with AI-driven recommendations, demonstrating our ability to deliver tailored edtech solutions. Partnerships with tech hubs like Communitech and MaRS further strengthen our innovation pipeline, while our training programs ensure clients adopt AI effectively, ensuring compliance with privacy regulations.
+
+============================================================
+CHUNK 1
+============================================================
+Pages: None
+Tokens: 637
+Headings: 2.2 Enterprise Product Experience > Our AI Product > 2.3 Data & AI Project Delivery Experience > 2.3.1 AI Projects > 2.3.2 Data Analytics & Engineering Projects
+
+2.2 Enterprise Product Experience
+Beam Data Ltd. specializes in developing AI products that address educational and enterprise needs, delivering scalable, secure, and integrated solutions for higher education institutions like USask. Our portfolio includes proprietary platforms like the AI Hub, which automates workflows, and specialized edtech tools that enhance teaching, learning, and administration. Drawing on our experience with WeCloudDataÕs LMS, the AI71 AcademyÕs learning portal, and the Galaxy app for school administration, we have created AI-driven products for content creation, personalized learning, and operational efficiency. These products integrate seamlessly with systems like Canvas and Ellucian Banner, supporting USaskÕs requirements for AI model customization and data analysis. Our expertise spans AI for teachers, learners, shared services, HR, marketing, and RFP processes, ensuring comprehensive support for USaskÕs diverse academic and administrative needs.
+
+Our AI Product
+- ➔ Education AI Products
+- ◆ AI for teachers
+- ◆ AI for learners
+- ◆ AI for shared services
+- Chatbot
+- Knowledge base (RAG)
+- AI for HR
+- AI for Marketing
+- AI for RFP
+- ➔ Learning Management System
+- ➔ Student Information System
+- ➔ Assessment Platform
+
+2.3 Data & AI Project Delivery Experience
+Beam Data Ltd. has delivered over 30 AI and data projects globally, demonstrating our expertise in executing high-impact solutions tailored to diverse sectors, including education, media, and healthcare. Our project delivery approach integrates strategic consulting, advanced machine learning (ML) techniques, and robust data engineering to meet client needs. With a team averaging 9 years of experience in AI and data science, we have successfully implemented projects that enhance operational efficiency, user engagement, and academic outcomes, positioning us to deliver a scalable, secure AI platform for the University of SaskatchewanÕs approximately 25,000 students and 5,000 faculty and staff.
+
+2.3.1 AI Projects
+Beam Data has delivered transformative AI projects, including an [REDACTED: funding source ] initiative for [ REDACTED: client organization] , where we enhanced their digital subscription platform with AI-driven content recommendations and personalization. Utilizing natural language processing (NLP) and ML infrastructure optimization, we improved user engagement with secure, user-focused AI solutions. In the healthcare sector, we consulted for startups, developing AI tools for patient data analysis and predictive modeling. These projects employed NLP and predictive algorithms to streamline diagnostics and improve scalability, supporting USaskÕs needs for research-focused AI applications and data analysis services.
+
+2.3.2 Data Analytics & Engineering Projects
+Our data analytics and engineering expertise includes building a cloud-based data warehouse for [REDACTED: client organization] using Azure, enabling real-time inventory tracking and reporting for their auction management system, which improved decision-making efficiency by 30%. For [REDACTED: client organization] , we optimized e-commerce strategies through customer segmentation and targeted marketing insights, leveraging data analytics to boost sales conversions. Additionally, for [REDACTED: client organization] , we developed an AIdriven accident risk modelling system for non-healthcare applications, using predictive analytics to enhance safety protocols and decision-making. These projects demonstrate our capability to manage complex data architectures, supporting USaskÕs data governance and analytics requirements.
+
+============================================================
+CHUNK 2
+============================================================
+Pages: None
+Tokens: 514
+Headings: 2.3.3 Software Development Projects > 2.4 Training Experience > 2.4.1 Collaboration with Universities & Academies
+
+2.3.3 Software Development Projects
+In software development, Beam Data has delivered innovative platforms tailored to client needs. For WeCloudData, since 2016, we developed a Learning Management System (LMS) with generative AI for personalized assessments, content recommendations, and instructor dashboards, serving thousands of global learners and aligning with USaskÕs LMS integration goals. For [REDACTED: client organization] we implemented an Azure AI-based solution for document intelligence, automating data extraction from application forms and reducing processing time by 40%. These projects showcase our expertise in building scalable, AI-driven
+software solutions that enhance operational efficiency and user experience, directly applicable to USaskÕs technical and academic requirements.
+
+2.4 Training Experience
+Beam Data Ltd. brings extensive expertise in AI training and upskilling, delivering hands-on programs that equip participants with practical skills in data science, machine learning (ML), and generative AI. With over 9 years of team experience, we have trained thousands of professionals, students, and researchers across diverse sectors, including higher education, government, and enterprise. Our training initiatives focus on real-world applications, leveraging platforms like Learning Management Systems (LMS) to enhance learning outcomes, preparing participants to adopt AI technologies effectively in academic and professional settings.
+
+2.4.1 Collaboration with Universities & Academies
+Beam Data, partnered with WeCloudData has established strong partnerships with universities and academies to deliver tailored AI training programs that support educational and research goals.
+In Canada, we have collaborated with [REDACTED: client organization] since 2020, offering the Applied Data Science and Big Data program to train professionals in AI-enhanced data engineering. We also work with the [REDACTED: client organization] on governance and data analytics training, focusing on public sector applications. We provide comprehensive LMSbased courses in AI and ML, serving thousands of learners globally.
+Internationally, we partnered with [REDACTED: client organization] to prototype an e-learning platform, integrating AI for enhanced learning experiences. In Saudi Arabia, we collaborated with the [REDACTED: client organization] to integrate e-learning platforms with AI tools, and with the [REDACTED: client organization] to develop AI assessment training. Our work with [REDACTED: client organization] in the UAE includes LMS development and AI skills training for government initiatives, while [REDACTED: client organization] in Germany benefits from our B2B learning platform expertise. These collaborations equip educators, students, and researchers with skills to leverage AI, aligning with USaskÕs training and research support needs.
+
+============================================================
+CHUNK 3
+============================================================
+Pages: None
+Tokens: 537
+Headings: 2.4.2 Enterprise Training > TEAM & KEY PERSONNEL > Nhat Tran Ð Director of Technology (Project Oversight and Security Lead)
+
+2.4.2 Enterprise Training
+Beam Data delivers specialized AI training programs for corporate clients across various industries, enhancing workforce capabilities in AI adoption. In healthcare, we partner with the [REDACTED: client organization] to train staff in AI for health data management, improving operational efficiency. In research, we collaborate with the [REDACTED: client organization] in the UAE, training 400 researchers and guiding 300 capstone projects, resulting in multiple AI research papers. In banking, we upskill teams at [REDACTED: client organizations] in ML infrastructure and predictive modeling, while for insurance, [REDACTED: client organization] receives training in risk analysis. In telecom, [REDACTED: client organization] benefits from our data analytics training programs.
+Additionally, we work with startup and tech hubs like [REDACTED: client organizations] to provide AI upskilling, fostering innovation among emerging companies. These enterprise training initiatives ensure clients, including USask, can effectively integrate AI into their workflows, supporting technical and operational excellence while maintaining regulatory compliance.
+03
+
+TEAM & KEY PERSONNEL
+Project Team and Qualifications
+Beam Data Ltd. proposes a highly qualified team with extensive experience in AI consulting, platform development, and educational technology to facilitate the implementation and ongoing support of the University of SaskatchewanÕs generative AI platform. Each team member brings significant industry experience, including direct work with higher education institutions, and a strong background in delivering scalable, secure, and compliant AI solutions. The teamÕs collective expertise ensures alignment with USaskÕs technical, security, and academic requirements.
+
+Nhat Tran Ð Director of Technology (Project Oversight and Security Lead)
+Nhat Tran, Director of Technology at BeamData, will oversee project delivery, stakeholder alignment, and security compliance, ensuring the AI platform meets the University of SaskatchewanÕs infrastructure and data protection needs. With 15 years of industry experience in machine learning, cloud technologies, and enterprise applications, NhatÕs deep knowledge of generative AI and cloud services enables BeamData to leverage cutting-edge technologies to solve complex business problems. Since joining BeamData in 2015, he has led cross-functional teams in building scalable, high-performance infrastructure, including cloud-native systems tailored to client needs. His higher education experience includes consulting on AI integration for the [REDACTED: client organization] Õs Applied Data Science and Big Data program since 2020, where he architected cloud-based learning platforms, directly supporting USaskÕs need for scalable AI infrastructure. NhatÕs expertise in cloud-based architectures and AI integration, demonstrated through projects like [REDACTED: client organization] Õs AI-driven subscription platform, ensures the delivery of customized, secure, and optimized solutions that align with USaskÕs technical and operational requirements.
+
+============================================================
+CHUNK 4
+============================================================
+Pages: None
+Tokens: 515
+Headings: Shaohua Zhang Ð Head of AI (AI Model Customization and Integration) > Eric Liu Ð Program Director (AI-Powered Learning Content Development and Project Delivery)
+
+Shaohua Zhang Ð Head of AI (AI Model Customization and Integration)
+Shaohua Zhang, CEO and Head of AI at BeamData, will lead the customization and integration of generative AI models into the University of SaskatchewanÕs workflows, ensuring seamless compatibility with systems. With 12 years of industry experience in AI system customization and
+MLOps, Shaohua has led BeamDataÕs technical execution and strategic delivery since 2015. His expertise in Microsoft technologies, particularly Azure AI, enables the development of robust, scalable, and future-proof AI solutions. ShaohuaÕs higher education experience includes leading the development of an AI-powered skills assessment tool for the [REDACTED: client organization] since 2022, where he integrated AI models into educational workflows to support thousands of learners, aligning with USaskÕs use cases for student content summarization and clinical trial SOP generation. His leadership in developing CI/CD pipelines for model deployment and monitoring ensures continuous improvement and operational excellence, directly supporting USaskÕs need for a scalable and maintainable AI platform. ShaohuaÕs team background includes guiding cross-functional teams to deliver innovative AI solutions, ensuring technical and operational alignment with client objectives.
+
+Eric Liu Ð Program Director (AI-Powered Learning Content Development and Project Delivery)
+Eric Liu, Program Director and co-founder of BeamData, will oversee the delivery of AI-driven elearning content and micro-credential programs for the University of SaskatchewanÕs academic community, ensuring efficient resource allocation and adherence to project timelines and budgets. With 25 years of industry experience in data management, descriptive analytics, and predictive modeling, Eric holds an MBA from China Europe International Business School and an M.Eng. in Operations Research from Huazhong University of Science and Technology. His team background includes senior executive roles at Siemens, ING Bank, ING Direct, CIBC, GE Money, Scotiabank, and Affirm Financial, where he led high-impact AI and data initiatives. Since co-founding BeamData in 2015, Eric has managed large-scale AI projects, specializing in AI systems management, industry research, and product design. His higher education experience includes overseeing the development of AI-enhanced training modules for the University of CalgaryÕs Applied Data Science and Big Data program since 2020, mentoring post-secondary students in real-world AI use cases. EricÕs leadership in shaping innovative AI offerings, combined with his work on WeCloudDataÕs Learning Management System (LMS) since 2016, incorporating generative AI for automated assessments and content personalization, directly supports USaskÕs teaching innovation goals and requirements for a scalable, compliant AI platform.
+
+============================================================
+CHUNK 5
+============================================================
+Pages: None
+Tokens: 699
+Headings: Shan Gao Ð Project Delivery Director (HR AI Product owner, Talent Upskilling) > Alexander Krstich Ð AI Project Manager (Administrative Workflow and Platform Development) > Ricardo Alamo Ð Agentic Workflow Product Owner
+
+Shan Gao Ð Project Delivery Director (HR AI Product owner, Talent Upskilling)
+Dr. Shan Gao, Project Delivery Director at BeamData, will lead the development of AI-driven chat and data analysis services for the University of SaskatchewanÕs HR and administrative workflows, ensuring alignment with project objectives and compliance with data governance standards. With 10 years of industry experience in engineering and data analytics, Shan holds a Ph.D. and has been instrumental in leading BeamDataÕs internal AI product development since joining in 2016. Her team background includes spearheading cross-functional teams to deliver high-impact AI solutions across education and other sectors. ShanÕs higher education experience includes leading the development of an AI-powered skills assessment tool for the [REDACTED: client organization] since 2022, where she streamlined applicant screening and upskilling processes, aligning with educational outcomes relevant to USaskÕs needs for largecontext analysis and administrative automation. Notably, she spearheaded BeamDataÕs AIdriven talent platform, which streamlines recruitment and upskilling to identify and develop toptier AI specialists, demonstrating her ability to deliver technically sound and business-aligned AI initiatives. ShanÕs commitment to fostering continuous learning ensures that USaskÕs AI platform will support innovative HR solutions and scalable data analysis capabilities.
+
+Alexander Krstich Ð AI Project Manager (Administrative Workflow and Platform Development)
+Alexander Krstich will manage the development and deployment of AI solutions for administrative workflows at the University of Saskatchewan, overseeing projects such as the [REDACTED: client organization] agent and reporting assistance tools. As a Technical Project Manager specializing in AI/ML, Alex excels in leading multi-disciplinary teams, including Data Scientists, Data Engineers, Software Engineers, Data Analysts, DevOps Engineers, and Machine Learning Engineers, to deliver innovative AI/ML solutions that address critical business challenges. With an analytically minded, self-driven approach and a passion for creative problem-solving, he uncovers unique opportunities to integrate the latest advancements in AI and machine learning, creating competitive advantages across diverse industries. His strong communication skills foster collaboration, ensuring optimized, data-driven outcomes for clients. Alex holds a BachelorÕs degree in Political Science from the University of Toronto, bringing a unique perspective to project management that enhances stakeholder engagement and strategic planning. With extensive experience in AI project management, Alex ensures timely delivery and seamless integration with existing systems, supporting USaskÕs goals for efficient administrative automation and platform scalability.
+
+Ricardo Alamo Ð Agentic Workflow Product Owner
+Ricardo Alamo, AI Project Manager at Beam Data and an MBA graduate, will oversee the design and implementation of agentic workflows, ensuring the AI platformÕs adaptability to USaskÕs diverse use cases. With a wealth of experience leading AI-driven initiatives across various sectors, Ricardo has successfully managed and implemented AI projects for prominent organizations such as [REDACTED: client organization] , [REDACTED: client organization] , and [REDACTED: client organization] . His expertise lies in orchestrating cross-functional teams to deliver scalable AI solutions that align with business objectives and drive innovation. RicardoÕs approach combines strategic planning with hands-on execution, ensuring that AI projects are not only technically sound but also deliver tangible business value. His leadership has been instrumental in fostering collaborations between technical teams and stakeholders, facilitating seamless integration of AI technologies into existing workflows. Ricardo holds an MBA from the Pan-American Institute for High Business Management (IPADE) and a degree in Civil Engineering, bringing a strong analytical foundation to optimize workflows for USaskÕs technical and operational needs.
+
+============================================================
+CHUNK 6
+============================================================
+Pages: None
+Tokens: 545
+Headings: Rhys Williams Ð Lead AI Engineer & Architect (AI Architecture, Agent Framework Owner): > Dawei Zhang Ð Cloud & DevOps Architect: > Ziyang Tian Ð EdTech AI Solution Engineer (Galaxy App, Video AI Platform): > Victor Wilm Ð EdTech AI Integration Lead (Lead AI Software Engineer, LMS AI Integration, AI Learning Assistant):
+
+Rhys Williams Ð Lead AI Engineer & Architect (AI Architecture, Agent Framework Owner):
+Rhys Williams, AI Engineering Lead at BeamData, will lead the design and architecture of the AI platform, serving as the agent framework owner to ensure robust and scalable AI systems. With extensive experience developing scalable AI frameworks, Rhys has engineered a large-scale, Kubernetes-based Agentic AI framework that integrates Ray for distributed computing, enabling efficient deployment and management of complex AI systems. His technical expertise encompasses Large Language Models (LLMs), computer vision, and robotics, allowing BeamData to deliver cutting-edge solutions across various industries. In his previous role, Rhys developed AI-driven search systems that are currently utilized by millions of users in production environments. This experience underscores his ability to build robust, high-performance AI
+applications that meet the demands of large-scale, real-world deployments, directly contributing to USaskÕs need for a secure and adaptable AI infrastructure.
+
+Dawei Zhang Ð Cloud & DevOps Architect:
+Dawei Zhang, a seasoned AI and Cloud Solutions Architect at BeamData, will oversee cloud infrastructure and DevOps processes, ensuring the AI platformÕs reliability and scalability within USaskÕs environment. With extensive experience designing and implementing enterprise-grade solutions leveraging Microsoft technologies, Dawei brings deep expertise in Microsoft Azure services, enabling him to architect scalable, secure, and efficient cloud infrastructures tailored to diverse business needs. At BeamData, Dawei plays a pivotal role in integrating Microsoft tools such as Azure Machine Learning, Azure Synapse Analytics, and Azure Data Factory into AIdriven projects. His proficiency ensures that clients benefit from seamless deployments, optimized performance, and adherence to best practices in cloud computing. DaweiÕs background also includes significant contributions to projects involving the Microsoft ecosystem, where he focused on enhancing system reliability and scalability. His ability to bridge the gap between complex technical requirements and practical business solutions makes him an invaluable asset to any team aiming to harness the full potential of MicrosoftÕs cloud offerings, aligning with USaskÕs need for secure and scalable AI infrastructure.
+
+Ziyang Tian Ð EdTech AI Solution Engineer (Galaxy App, Video AI Platform):
+Ziyang Tian will engineer AI solutions for educational technology, including the Galaxy App for Student Information System and Admission Management, and the Video AI platform for multimedia content analysis. With 8 years of experience in edtech AI development, ZiyangÕs work on the Galaxy App automates administrative tasks, aligning with USaskÕs need for efficient student management systems.
+
+Victor Wilm Ð EdTech AI Integration Lead (Lead AI Software Engineer, LMS AI Integration, AI Learning Assistant):
+Victor Wilm will lead the integration of AI and develop AI learning assistants to enhance student support. With 9 years of experience as a lead AI software engineer, Victor has expertise in LMS AI integration and personalized learning tools, ensuring seamless adoption and alignment with USaskÕs teaching and learning goals.
+04
+
+============================================================
+CHUNK 7
+============================================================
+Pages: None
+Tokens: 612
+Headings: PROPOSED SOLUTION > 4.1 Overview Service Architecture > 4.1.1 Pain Points & Proposed Solutions
+
+PROPOSED SOLUTION
+04
+Solution Design and Execution Strategy
+
+4.1 Overview Service Architecture
+Before jumping into the details of the proposed services, we would like to share our understanding of the USaskÕs pain points and provide an overview of the product features and services we can provide to help address the pain points.
+
+4.1.1 Pain Points & Proposed Solutions
+Currently there is no centralized management of AI services and products, therefore staff, faculty, and students subscribe to their own AI tools and services. This approach works however it poses serious risks and can be optimized for the following reasons.
+- Compliance risks and governance
+- Since thereÕs no centralized governance, the university is running the risk of staff uploading sensitive data such as student PII to the AI service providers such as OpenAI, Anthropic, etc.
+- Data leakage and university data being used by AI providers for model training can pose significant reputational risk to USask.
+- Lack of best practices
+- ThereÕs a lack of best practices and knowledge sharing among faculty and staff and therefore the degree of productivity gain via AI services is not trackable
+- ThereÕs not a good way of standardizing best practices without proper activity logging and usage insights
+- Poor cost optimization
+- University staff subscribing to external AI services and submitting reimbursement does not help with cost optimization. There's an imbalance of usage between power users and sporadic users and therefore resulting in huge waste of subscription fees.
+- Lack of standardization of workflows
+- Teams such as HR, admission, research and content development can all benefit from optimization of common AI workflows
+- Building a centralized AI platform can help achieve a more efficient workflow management
+- Slow adoption and difficult change management
+- To achieve the University management teamÕs strategic vision of AI adoption, training and change management need to be prioritized. Without a centralized management platform, changes will be hard to make.
+In this response to the RFP, Beamdata would like to propose the adoption of our AI Hub platform and other services that can help effectively address the above pain points. In Section 4.2 to 4.6, we will propose the services in detail. In this section, we will provide a high-level overview of our AI HubÕs capabilities and its relevance to the RFP requirements.
+The solution weÕd like to propose is a centralized AI Hub platform that helps USask manage the solutions end-to-end from AI infrastructure and framework management, model customization, to applications such as Chat, knowledge base, and workflow, as well as centralized logging, monitoring, analytics, and compliance management. To explain the vision, below is the highlight architecture diagram of Beam DataÕs AI Hub.
+AI Hub solution proposal for USask
+The proposed solution centralizes infrastructure management, model deployment and inference, has a transparent pricing which is usage-based, and allows staff, faculty and researchers to launch custom chat assistants and build custom agentic workflows.
+We call this BeamdataÕs AI Hub. LetÕs take a look at a few examples of how AI Hub can be used by end users in different roles.
+
+============================================================
+CHUNK 8
+============================================================
+Pages: None
+Tokens: 658
+Headings: AI Hub for Admission Office > AI Hub for Human Resource > AI Hub for Instructors and Course Developers > AI Hub for IT & Security
+
+AI Hub for Admission Office
+- Pain points
+- Dealing with many studentsÕ inquiries
+- Each student need to track the states in the admission pipeline
+- File processing is a pain
+- Email responses are slow
+- Takes time to retrieve an individual studentÕs profile information
+- Payment and refund status tracking is time-consuming
+- How AI Hub addresses the challenges
+- Payment and refund status lookup by AI text-to-sql queries
+- Communication email auto-categorization
+- Email drafting by AI based on system and user prompts for each scenario
+- Integration with existing tools and systems
+- Knowledge base about the admission policies for Q and A
+- Comparing documents using AI
+
+AI Hub for Human Resource
+- Pain Points
+- Resume screening takes significant amount of time
+- Candidate profile comparison and ranking is time consuming
+- Interview process involves multiple stages and persons and status tracking is hard
+- HR personnel needs to deal with lots of email inquiries and need to send rejection emails
+- Keep tracking of interview notes is very time consuming
+- New hire onboarding and training is a very repetitive process
+- How AI Hub addresses the challenges
+- AI resume filters and ranking help save time
+- Reject emails can be automatically drafted based on interview notes
+- AI Hub can be used to create a knowledge base and conversational bot to handle onboarding training and assessments.
+
+AI Hub for Instructors and Course Developers
+- Pain Points
+- Course content development takes significant effort and time
+- Assignment grading is time consuming
+- Student support requires a lot of teaching assistant hours
+- Years of learning materials cannot be easily turned into AI-friendly format
+- How AI Hub addresses the challenges
+- AI Hub can be used to create a knowledge base by converting all past materials into vectorized content for queries
+- AI Hub can be customized for assignment grading
+- AI Hub can be customized to create workflows for content development. For example, converting slides or lecture videos into transcriptions, reviewed by instructors, and then AI voiceover can be added to generate a lecture or tutorial video
+
+AI Hub for IT & Security
+- Pain Points
+- With staff using their own ChatGPT or AI tool subscription, itÕs not easy to track usage and form best practices. Knowledge sharing is very limited.
+- Governance of usage is a big headache
+- Cost optimization is difficult
+- How AI Hub addresses the challenges
+- AI Hub can be deployed securely on-premise or in the private/public cloud thatÕs governed by the IT infrastructure team
+- AI Hub as a centralized AI platform can be used to optimize AI tooling cost. It covers most commonly used AI features such as chat, knowledge base via RAG and content engineering, workflow automation. The token usage can be controlled by IT and sporadic users wonÕt waste too much license cost
+- The added benefit is centralized monitoring and observability so the University knows HOW AI is used by different departments and has the ability to discover best practices and further improve cost structure.
+- AI Hub can be customized to produce IT and security training content and assessments to make sure that all staff are trained properly on security, privacy, and compliance
+- The data and AI team will also have access to LLM model customization and use the AI Hub to decide the best model to use for a given use case, resulting in further cost reduction.
+- Allowing students to bring their own ChatGPT or Gemini API keys will also help Universities simplify the cost management and communications and encourage the adoption of university AI platforms.
+
+============================================================
+CHUNK 9
+============================================================
+Pages: None
+Tokens: 578
+Headings: 4.1.2 AI Infrastructure > ● AI infrastructure > 4.1.3 AI Framework (chat, RAG, agent) > 4.2.1 AI Chat & Data Analysis
+
+4.1.2 AI Infrastructure
+- The AI Hub can be deployed on-premise (managed by Beamdata), private cloud, or used by USask in a SaaS model.
+- Beam data can help deploy the AI platform to be integrated seamlessly with USaskÕs existing digital infrastructure.
+- For example, AI Hub can be used to configure the conversational chatbot with system configuration. An API endpoint will be deployed automatically so a chatbot on UniversityÕs website can use the API for integration.
+- AI Hub can also be used to index all student data and learning content into vector databases and build a knowledge base about the content and students. The LMS and SIS can then integrate with the knowledge base via API and conversational chat UI.
+- The AI HubÕs workflow tool feature can be used to build automation workflows so interaction data can be read from and written to the CRM, ERP, or other systems. We will use the AI Hub to build integration endpoints.
+
+● AI infrastructure
+- The AI Hub is flexible and can support different types of AI infrastructure. The end users can choose to deploy and serve open-source LLMs directly via the AI Hub, or provide API keys to access commercial LLM models such as GPT, Claudi, or Gemini.
+
+4.1.3 AI Framework (chat, RAG, agent)
+The AI Hub provides 3 main components developed in-house by Beamdata.
+- Chatbot and related features
+- Choose different LLM models
+- Memory management
+- Prompt templates and sharing
+- Team space and project management
+- Private mode vs team mode
+- Creation of custom Chatbot by configuring system prompts
+- System prompt
+- Knowledge base related features
+- File management
+- Chat assistant integration
+- Vector database deployment
+- Document chunking and indexing tool
+- Team collaboration
+- Evaluation dataset and benchmarks
+- Agents workflow related features
+- Standard workflow
+- ■ A standard set of workflows that can be used to automate email workflows, calendar, meeting notes, etc.
+- Custom workflow
+- ■ Workflow that can be customized by Beamdata to meet different teamÕs requirements
+
+4.2.1 AI Chat & Data Analysis
+The AI Hub will allow users at different levels to create their customized chatbot.
+- Individual users can use the Hub to create a regular chat session by interacting with a general-purpose chatbot at their choice (approved by USask)
+- Project-specific chatbot can be created and will have context about the project details and keeps track of the history
+- Teams and departments can have their own custom chatbots that have domain knowledge (HR, admission, support, etc.).
+Over time, users will discover good prompts and can share them with other users within and across teams.
+The Chatbot is multimodal and supports different types of files. Users can upload files or connect the bot to a database and use natural language to interact with the file or database for data analysis and querying.
+
+============================================================
+CHUNK 10
+============================================================
+Pages: None
+Tokens: 750
+Headings: 4.2.2 Compliance with Intellectual Property and Privacy Regulations > 4.2.3 Infrastructure Protection > 4.3 Optional Services > 4.3.1 AI Model Customization
+
+4.2.2 Compliance with Intellectual Property and Privacy Regulations
+The AI Hub is developed with security and compliance in mind. It gives the infrastructure and compliance teams the options to decide the type of models to use, where to deploy the models and services, whether to allow file uploading, whether data can be used for model training and customization.
+The AI Hub ensures strict compliance with global and regional intellectual property (IP) and privacy regulations throughout the lifecycle of AI infrastructure and GenAI platform delivery. Our commitments include:
+- Data Privacy : we will adhere to Canadian data protection regulations such as PIPEDA as well as GDPR. All personal data is processed under the principles of lawfulness, fairness, transparency, and data minimization.
+- Intellectual Property Protection : apart from the out-of-the-box models, any customized and fine-tuned models and data associated with it will remain the exclusive property of the client. No data or model artifacts will be repurposed for other projects and will not be used for any model training purposes without UsaskÕs consent.
+- Data Residency : infrastructure can be deployed on-premise or in a private cloud that resides in the Canadian region with encryption.
+- Audit & Reporting : we will deploy DataOps and model observability tools to make sure that data lineage is traceable and usage of data and model is transparent. Privacy impact assessments (PIAs) can be done on a regular basis and we will maintain good documentation for compliance purposes.
+
+4.2.3 Infrastructure Protection
+Beamdata is ISO27001 certified and follows data and infrastructure protection best practices.
+- Access Control : The AI Hub admin portal has role-based access control (RBAC) and can enable multi-factor authentication (MFA) to ensure only authorized personnel can access infrastructure resources. For the end users, we have tiered access control and can integrate with USaskÕs authentication servers.
+- Encryption : Depending on the infrastructure, data is encrypted both in transit (TLS 1.2+) and at rest (AES-256). Secrets, API keys, and credentials are managed via secure vaults.
+- Monitoring & Logging : currently deployed in the AWS cloud, the AI Hub has centralized logging and infrastructure monitoring, and anomaly detection to ensure rapid identification and remediation of security incidents.
+
+4.3 Optional Services
+Apart from the AI Hub platform which provides a suite of core features such as chat, knowledge base, RAG, and workflow management, Beamdata can also help build customized models and infrastructure.
+
+4.3.1 AI Model Customization
+We can support AI models customization in different ways.
+- Dynamic model switching
+- To decide the best model for a given task, task-specific evaluation dataset needs to be created and constantly updated. Beamdata can help with custom EVAL dataset creation and benchmarking
+- The dataset can then be uploaded to the AI Hub for automatic benchmarking and model comparison
+- Domain adaptation of LLMs
+- Model finetuning requires special skillsets. Beamdata can help different departments build fine-tuned LLMs for domain adaptation.
+- We can help fine-tune both LLMs and embeddings.
+- Custom RAG tuning and data ingestion
+- The AI Hub allows the teams and users to upload and manage documents and knowledge base. However, in some cases the documents may need to be automatically ingested into the AI platform for freshness. In other cases, the problem is more context and requires optimization of document processing and context optimization.
+- We can help customize this type of tasks and help set up automation.
+- Content conversion
+- For educational content, the faculty team may not have the time and expertise to do data integration and conversion. Beamdata can provide services to help convert education content into AI-formats that can be used in the AI platform.
+
+============================================================
+CHUNK 11
+============================================================
+Pages: None
+Tokens: 566
+Headings: 4.3.2 AI Enabling Infrastructure > 4.4 Professional Services > 4.4.1 AI Consulting Service
+
+4.3.2 AI Enabling Infrastructure
+The AI Hub supports the following AI infrastructure:
+- GPU services
+- Vector database deployment
+- LLM self-hosting and inference
+- Governance and guardrails
+- Context and memory management
+If USask prefers to host their own open-weights LLMs such as Llama, deepseek, or mistral, Beamdata has the ability to do that. We can help deploy a ray-cluster for fast LLM inference and the ray cluster and kuberay can help scale the services easily. The self-hosted LLMs and GPUs can be deployed on-premise via Kubernetes as well.
+If the client prefers a given Cloud provider, we can work with the providerÕs PaaS tools such as AmazonÕs Bedrock or Azure OpenAI for model hosting.
+We have the ability to deploy open-source vector databases such as Milvus on-premise and have production experience with it for other clients in the past. We can also help deploy guardrail tools to make sure AI governance is done based on best practices.
+Beamdata also developed its own frameworks for context and memory management and has developed a custom data model for that. This can be integrated easily to enhance the AI Hub.
+
+4.4 Professional Services
+Beamdata can provide both strategy consulting and solution delivery services. HereÕre the professional services we propose for USask.
+- Help organize an AI readiness assessment university-wide and provide detailed report which can inform the AI strategies. It also helps gauge interest from the staff that will help inform the next steps for change management.
+- Create an AI-literacy e-learning course for USask to help manage change and teach how to use the new tools
+- Based on the AI Hub framework, Beam will work with different departments to build custom workflows as POCs. Including the end users in the change process will help increase the chance of success.
+
+4.4.1 AI Consulting Service
+Since 2019, Beamdata has provided data & AI consulting and solution delivery services to more than 40 companies. We have partnerships with tech hubs such as Communitech and MaRS Discovery District in Ontario and has been supporting tech startups on project implementations. We also delivered large-scale projects for companies such as Barrett-Jackson (part of Endeavor) and The Globe and Mail. Our most recent ongoing project ÒEmpowering Journalism with Generative AIÓ received [REDACTED: funding amount and funding source]
+Clients we serviced before
+Our typical engagement process includes the following steps:
+BeamÕs engagement process
+We have delivered executive training to many clients and have our in-house developed AI and Data Readiness Assessment tool that can help USask understand the universityÕs AI readiness. Based on the workshops or meeting with your team, and the assessment outcome, we will customize AI strategy for you. We can also work with you outside of the scope of this project to provide ongoing strategy support.
+
+============================================================
+CHUNK 12
+============================================================
+Pages: None
+Tokens: 912
+Headings: 4.4.2 AI Workflow Tool Development & Integration > 4.5.1 University Benefits > 4.5.2 Indigenous Person Scholarships or skills training > SUPPORT AND MAINTENANCE
+
+4.4.2 AI Workflow Tool Development & Integration
+Each university has its own unique workflows when it comes to student admission, HR, operations, course design, and teaching. While BeamdataÕs AI Hub provides standard workflow automation features, more complex workflows will require customized services. Beamdata has the experience and expertise to help USask turn existing workflows into AI-based automation so the user experience is less impacted by the introduction of new tools.
+Converting human workflows into automated Agentic workflows is not only a technical challenge but also a culture challenge. Based on our experience, AI products are not well received when
+they donÕt fit into end usersÕ typical workflows. ThatÕs why the end user survey and UAT is extremely important in the process. Our consultants can be deployed to work closely with the staff in each department and learn their existing workflows, get their input, and build something that will be liked by the end users. As part of the change management process, we will deliver training to the end users and the training starts from the moment of initial requirement gathering.
+
+4.5.1 University Benefits
+- Benefits related to project delivery and product use
+- Once the project is scoped out, we can provide a [REDACTED: discount details]
+- Benefits related to AI assessments
+- Beamdata has AI readiness assessment tool and can help do the assessments and detailed reporting
+- Benefits related to training
+- We can offer AI literacy e-learning for all USask students
+- We can offer [REDACTED: percentage discount] on role-based AI training
+- We can offer [REDACTED: percentage discount code and savings value] for USask staff who want to enroll in our parent company WeCloudData AcademyÕs e-learning courses. We will create an AI Hub usage training short course for end users
+- Benefits related to collaboration
+- Our parent company WeCloudData Academy has experience collaborating with University of Calgary on big data and AI programs. We are happy to discuss how to help USask launch AI training programs and e-learning courses that can be delivered to USask students
+
+4.5.2 Indigenous Person Scholarships or skills training
+Beamdata can provide
+- [REDACTED: AI literacy training value and participant number]
+- [REDACTED: discount percentage and per-person savings]
+05
+
+SUPPORT AND MAINTENANCE
+Support level and maintenance details
+Beam Data Ltd. is committed to providing reliable support and maintenance for the University of SaskatchewanÕs generative AI platform.
+We offer a dedicated support representative to serve as USaskÕs primary contact, available via email and phone during business hours, ensuring personalized assistance for issue resolution and ongoing support needs. This representative will coordinate with our team to address inquiries efficiently.
+The platform is designed to be upgradable, with a regular update schedule. We provide software updates as needed to enhance functionality, security, and compatibility, deployed automatically with advance notice to minimize disruption during low-usage periods, in line with our commitment to productive use and maintenance.
+Our solution is scalable to accommodate USaskÕs growing operational demands. The platform leverages flexible infrastructure to adapt to increasing user numbers, data volumes, and feature requirements, supporting seamless expansion as needed.
+Our Service Level Agreement (SLA), effective as of September 1, 2025, aligns with USaskÕs needs and is governed by the terms outlined in our policy. We guarantee 99% uptime, with scheduled maintenance limited to ensure service availability. Response times are set within 1 business day for emails and messages, with urgent requests addressed within the same timeframe. Delivery of services adheres to agreed milestones, with delays communicated alongside a revised plan. All outputs are reviewed by senior consultants before delivery to maintain quality, and progress updates are provided weekly or bi-weekly. At project close, comprehensive documentation and knowledge transfer are provided. If service levels are not met, USask may be eligible for credits toward fees, with 90 daysÕ notice given for any material changes to the SLA. The agreement remains in effect unless terminated, with escalation to a dedicated project lead or senior management for unresolved issues.
+Remote monitoring is included to proactively identify and address performance concerns, ensuring the platform operates effectively. Standard support is provided at no additional cost, with no minimum SLA beyond the outlined commitments. A web-based ticketing system allows for issue reporting, though no specific escalation or priority mechanisms are guaranteed beyond senior management access. There are no additional charges for standard support, and premium options are not offered.
+This approach ensures USask receives consistent, dependable support tailored to its requirements.
+06
+
+============================================================
+CHUNK 13
+============================================================
+Pages: None
+Tokens: 619
+Headings: REFERENCE > SUSTAINABILITY INITATIVES > THIRD-PARTY SERVICES > INDIGENOUS PARTICIPATION
+
+REFERENCE
+Submission of relevant references
+Submission of relevant references
+[REDACTED: all client names, roles, emails, and engagement details]
+References available upon request.
+07
+
+SUSTAINABILITY INITATIVES
+Corporate sustainability policy and value added services
+Beam Data Ltd. is committed to embedding sustainability into our corporate practices and the delivery of the University of SaskatchewanÕs generative AI platform, reflecting USaskÕs dedication to environmental, social, ethical, and economic principles.
+Our corporate sustainability policy emphasizes reducing environmental impact, fostering social responsibility, and promoting ethical operations. General initiatives within our organization include a waste reduction program that diverts office waste through recycling and composting, and a supplier diversity initiative that supports local and minority-owned businesses, enhancing economic equity. We are also implementing a staff volunteer program to address community needs, and are planning a carbon offset strategy to mitigate travel-related emissions from project engagements.
+For this procurement, we propose specific sustainability initiatives tailored to USask. We will adopt a circular economy approach by designing the AI platform for long-term scalability and upgradability, minimizing the need for frequent hardware replacements and supporting economic efficiency. Regular quarterly updates will be delivered automatically, ensuring compatibility and security without extensive resource use, reducing operational waste. Additionally, we will collaborate with USask to integrate AI-driven tools that promote digital learning resources, reducing paper usage and physical material waste, which aligns with environmental sustainability goals. Our training programs, such as those with the University of Calgary and Saudi Digital Academy, will be adapted to include sustainable AI practice modules, equipping USaskÕs community with skills to support ethical and eco-conscious technology use.
+08
+
+THIRD-PARTY SERVICES
+08
+Indication of services related to third-party
+All services will be directly provided by our organization, with no reliance on third-party resellers or intermediaries, as required by the RFP. We will leverage USaskÕs in-house Mulesoft PaaS for integration but will not broker services to external providers, ensuring full ownership and management.
+By delivering a customizable, secure, and user-focused AI platform, we aim to empower USask to achieve its goals of modernizing IT infrastructure, enhancing service delivery, and driving innovation across its academic and administrative functions.
+09
+
+INDIGENOUS PARTICIPATION
+Our support to indigenous parties
+Beam Data Ltd. is dedicated to promoting Indigenous participation, focusing on creating meaningful opportunities for Indigenous students and communities through education and skill development.
+We offer scholarships and training programs to support Indigenous students, providing financial assistance to help them pursue studies in high-demand areas such as data science and artificial intelligence. This support aims to enhance their career prospects and professional growth. Additionally, we are ready to conduct specialized AI and data analytics workshops, designed to meet the specific needs and interests of Indigenous learners. These sessions will offer hands-on training and mentorship, empowering participants with practical skills for success in the technology industry.
+For this procurement, we plan to strengthen these efforts by partnering with USask to develop and deliver additional AI and data workshops. These will be crafted to be culturally sensitive and easily accessible, ensuring they benefit Indigenous participants effectively.
+
+============================================================
+CHUNK 14
+============================================================
+Pages: None
+Tokens: 198
+Headings: Indigenous Person Scholarships or Skills Training > DISCLOSURE
+
+Indigenous Person Scholarships or Skills Training
+Beam Data is pleased to offer the following initiatives:
+- One free in-person or virtual AI literacy training workshop, open to over 300 Indigenous individuals [REDACTED: dollar value] , to build foundational AI skills.
+- A [REDACTED: discount percentage and savings amount] for Indigenous staff interested in enrolling in e-learning courses through our parent company, WeCloudData Academy.
+10
+
+DISCLOSURE
+Disclosure of Judgments, Litigation, or Reversals
+Beam Data Ltd. hereby warrants that, to the best of our knowledge as of August 26, 2025, there are no judgments, pending litigation, or expected legal actions that could materially affect the viability or stability of our organization. Furthermore, we are not aware of any real or potential reversals that might impact our financial or operational standing in a significant manner. Our organization maintains a strong commitment to compliance and sound business practices, ensuring our continued ability to deliver reliable and innovative AI solutions as outlined in this proposal.
+

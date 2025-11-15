@@ -90,7 +90,7 @@ class RFPChatbot:
         self.max_tokens = max_tokens
 
         # Load FAISS
-        self.index = faiss.read_index(vector_db_file)
+        self.index = faiss.read_index(str(vector_db_file))
 
         # Load metadata
         with open(metadata_file, "r", encoding="utf-8") as f:
@@ -158,10 +158,8 @@ class RFPChatbot:
     # Prompt Construction
     # -----------------------------
     def _build_prompts(self, query: str, chunks: List[Dict]) -> tuple:
-        context = "\n\n".join(
-            f"[{c['label']} - Chunk {c['index']}]\n{c['chunk']}"
-            for c in chunks
-        )
+        context = "\n\n".join(c["chunk"] for c in chunks)
+
 
         # Disqualified vendors section
         disqualified_info = ""
@@ -194,6 +192,7 @@ Rules:
 2. Disqualified vendors must be excluded from comparisons unless explicitly asked.
 3. Always cite evidence from the retrieved chunks.
 4. Maintain an expert, objective tone.
+5. Never hallucinate. If information is missing in the retrieved context, state it clearly.
 
 {disqualified_info}
 """

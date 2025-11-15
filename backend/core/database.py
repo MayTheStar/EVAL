@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from core.core_config import settings
+from backend.core.core_config import settings
 
 # إنشاء الاتصال بقاعدة البيانات
 engine = create_engine(settings.DATABASE_URL, echo=False)
