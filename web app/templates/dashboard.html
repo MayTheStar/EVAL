@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Dashboard - EVAL</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-vendor.css') }}">
 </head>
 <body>
     <div class="app-container">
@@ -84,51 +85,31 @@
                 <h1 class="page-title">Dashboard</h1>
             </header>
             
-            <div class="dashboard-grid">
-                <!-- Upload RFP Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">📁</div>
-                    <h3 class="card-title">Upload RFP</h3>
-                    <p class="card-description">Upload your Request for Proposal document</p>
-                    <a href="{{ url_for('upload_rfp_page') }}" class="card-button">Upload</a>
-                    <div class="card-status" id="rfp-status"></div>
+            <!-- New vendor-scoring area -->
+            <section class="content-area">
+                <div class="content-inner">
+                    <div class="top-controls">
+                        <div>
+                            <button class="process-button" id="process-button-ui">
+                                <span class="button-text">Process Documents</span>
+                            </button>
+                        </div>
+                        <div id="status-msg" class="status-msg"></div>
+                    </div>
+
+                    <h2 class="section-heading">Vendor Comparison</h2>
+
+                    <div id="vendor-score-container" class="vendor-grid">
+                        <!-- Vendor cards will be injected here -->
+                    </div>
+
+                    <div id="no-scores" class="files-empty" style="display:none;">
+                        <div class="empty-icon">📭</div>
+                        <h3>No scoring results yet</h3>
+                        <p>Upload an RFP and vendor responses, then click "Process Documents" to run scoring.</p>
+                    </div>
                 </div>
-                
-                <!-- Upload Vendor Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">📦</div>
-                    <h3 class="card-title">Upload Vendor Response</h3>
-                    <p class="card-description">Upload vendor proposal responses</p>
-                    <a href="{{ url_for('upload_vendor_page') }}" class="card-button">Upload</a>
-                    <div class="card-status" id="vendor-status"></div>
-                </div>
-                
-                <!-- Chatbot Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">💬</div>
-                    <h3 class="card-title">Chatbot Assistant</h3>
-                    <p class="card-description">Ask questions about your documents</p>
-                    <button class="card-button" id="chatbot-button">Open Chat</button>
-                    <div class="card-status" id="chatbot-status"></div>
-                </div>
-                
-                <!-- Files Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">📄</div>
-                    <h3 class="card-title">My Files</h3>
-                    <p class="card-description">View and manage uploaded documents</p>
-                    <a href="{{ url_for('files_page') }}" class="card-button">View Files</a>
-                    <div class="card-status" id="files-status"></div>
-                </div>
-            </div>
-            
-            <!-- Process Button -->
-            <div class="action-bar" id="process-bar" style="display: none;">
-                <button class="process-button" id="process-button">
-                    <span class="button-text">Process Documents & Prepare Chatbot</span>
-                    <span class="button-icon">▶️</span>
-                </button>
-            </div>
+            </section>
         </main>
     </div>
     
@@ -137,10 +118,153 @@
         <div class="modal-content">
             <div class="modal-loader"></div>
             <h3>Processing Documents...</h3>
-            <p>This may take a few minutes. Please wait.</p>
+            <p>Processing in the web UI uses a simplified flow. This may take a few minutes depending on file sizes.</p>
         </div>
     </div>
     
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+    // UI bindings & fetch logic
+
+    async function fetchStatus() {
+        const res = await fetch('/api/get-status');
+        return await res.json();
+    }
+
+    async function loadVendorScores() {
+        const res = await fetch('/api/get-scores');
+        const data = await res.json();
+
+        const container = document.getElementById('vendor-score-container');
+        const noScores = document.getElementById('no-scores');
+
+        if (!data.success || !data.scores || Object.keys(data.scores.vendors || {}).length === 0) {
+            container.innerHTML = '';
+            noScores.style.display = 'block';
+            return;
+        }
+
+        noScores.style.display = 'none';
+        container.innerHTML = '';
+
+        const vendors = Object.values(data.scores.vendors);
+
+        // Sort vendors by total score (descending)
+        vendors.sort((a, b) => (b.total_score || 0) - (a.total_score || 0));
+
+        vendors.forEach(vendor => {
+            // Safe default values
+            const total = vendor.total_score !== undefined ? vendor.total_score.toFixed(1) : 'N/A';
+            const conf = vendor.confidence_score !== undefined ? (vendor.confidence_score * 100).toFixed(0) + '%' : 'N/A';
+            const strengths = vendor.strengths || [];
+            const weaknesses = vendor.weaknesses || [];
+            const criteria = vendor.criteria_breakdown || [];
+
+            const card = document.createElement('div');
+            card.className = 'vendor-card';
+
+            card.innerHTML = `
+                <div class="card-head">
+                    <h3 class="vendor-title">${vendor.vendor_name || 'Unnamed Vendor'}</h3>
+                    <div class="vendor-badges">
+                        <span class="badge score-badge">Total Score: ${total}</span>
+                    </div>
+                </div>
+
+                <div class="card-row">
+                    <div class="card-col">
+                        <h4>Strengths:</h4>
+                        <ul class="list-box strengths-list">
+                            ${strengths.length ? strengths.map(s => `<li>${s}</li>`).join('') : '<li>No strengths identified</li>'}
+                        </ul>
+                    </div>
+
+                    <div class="card-col">
+                        <h4>Weaknesses:</h4>
+                        <ul class="list-box weaknesses-list">
+                            ${weaknesses.length ? weaknesses.map(w => `<li>${w}</li>`).join('') : '<li>No weaknesses identified</li>'}
+                        </ul>
+                    </div>
+                </div>
+
+                <h4 class="criteria-heading">Criteria Breakdown:</h4>
+                <div class="criteria-box">
+                    ${criteria.map(c => {
+                        const evidenceList = (c.evidence || []);
+                        const gapsList = (c.gaps || []);
+                        
+                        return `
+                        <div class="criterion">
+                            <div class="crit-meta">
+                                <strong>${c.criterion_name} (Weighted: ${c.weighted_score !== undefined ? c.weighted_score.toFixed(1) : 'N/A'})</strong>
+                                <span class="crit-scores">Confidence: ${c.confidence !== undefined ? (c.confidence * 100).toFixed(0) + '%' : 'N/A'}</span>
+                            </div>
+                            <div class="crit-sub">
+                                <details>
+                                    <summary>Evidence (${evidenceList.length})</summary>
+                                    ${evidenceList.length ? `
+                                        <ul>
+                                            ${evidenceList.map(ev => `<li>${ev}</li>`).join('')}
+                                        </ul>
+                                    ` : '<p style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;">No evidence provided</p>'}
+                                </details>
+                                <details>
+                                    <summary>Gaps (${gapsList.length})</summary>
+                                    ${gapsList.length ? `
+                                        <ul>
+                                            ${gapsList.map(g => `<li>${g}</li>`).join('')}
+                                        </ul>
+                                    ` : '<p style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;">No gaps identified</p>'}
+                                </details>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    document.getElementById('process-button-ui').addEventListener('click', async () => {
+        // Show modal
+        const modal = document.getElementById('processing-modal');
+        const button = document.getElementById('process-button-ui');
+        
+        modal.classList.add('show');
+        button.disabled = true;
+
+        try {
+            const res = await fetch('/api/process-documents', {method: 'POST'});
+            const data = await res.json();
+            const status = document.getElementById('status-msg');
+
+            if (data.success) {
+                status.textContent = `✓ Processing complete! ${data.vendors_scored || 0} vendors scored.`;
+                status.style.background = 'rgba(76, 175, 80, 0.15)';
+                status.style.color = '#2e7d32';
+                await loadVendorScores();
+            } else {
+                status.textContent = '✗ Processing failed: ' + (data.message || 'Unknown error');
+                status.style.background = 'rgba(244, 67, 54, 0.15)';
+                status.style.color = '#c62828';
+            }
+        } catch (err) {
+            const status = document.getElementById('status-msg');
+            status.textContent = '✗ Processing failed: ' + err.message;
+            status.style.background = 'rgba(244, 67, 54, 0.15)';
+            status.style.color = '#c62828';
+        } finally {
+            // Hide modal
+            modal.classList.remove('show');
+            button.disabled = false;
+        }
+    });
+
+    // Initial load
+    window.addEventListener('load', async () => {
+        await loadVendorScores();
+    });
+    </script>
 </body>
 </html>

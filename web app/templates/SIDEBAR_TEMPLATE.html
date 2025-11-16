@@ -1,0 +1,91 @@
+<!-- 
+SIDEBAR TEMPLATE - Copy this into ALL your HTML templates
+(dashboard.html, upload_rfp.html, upload_vendor.html, chatbot.html, files.html)
+
+Replace the existing sidebar section with this complete version
+-->
+
+<div class="sidebar">
+    <!-- User Profile Header -->
+    <div class="sidebar-header">
+        <div class="user-profile">
+            <div class="user-avatar">👤</div>
+            <div class="user-title">USER</div>
+            <div class="user-id">{{ username or 'Guest' }}</div>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Dashboard</span>
+        </a>
+        <a href="{{ url_for('upload_rfp_page') }}" class="nav-item {% if request.endpoint == 'upload_rfp_page' %}active{% endif %}">
+            <span class="nav-icon">📄</span>
+            <span class="nav-text">Upload RFP</span>
+        </a>
+        <a href="{{ url_for('upload_vendor_page') }}" class="nav-item {% if request.endpoint == 'upload_vendor_page' %}active{% endif %}">
+            <span class="nav-icon">📦</span>
+            <span class="nav-text">Upload Vendors</span>
+        </a>
+        <a href="{{ url_for('chatbot_page') }}" id="chatbot-nav" class="nav-item {% if request.endpoint == 'chatbot_page' %}active{% endif %}">
+            <span class="nav-icon">💬</span>
+            <span class="nav-text">Chatbot</span>
+        </a>
+    </nav>
+
+    <!-- Secondary Section -->
+    <div class="sidebar-section">
+        <div class="section-title">MANAGE</div>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('files_page') }}" class="nav-item {% if request.endpoint == 'files_page' %}active{% endif %}">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Files</span>
+        </a>
+    </nav>
+
+    <!-- Logout at Bottom -->
+    <nav class="sidebar-nav sidebar-nav-bottom">
+        <a href="{{ url_for('logout') }}" class="nav-item">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-text">Logout</span>
+        </a>
+    </nav>
+</div>
+
+<!-- 
+IMPORTANT NOTES:
+
+1. Make sure each template passes 'username' variable:
+   return render_template('your_page.html', username=session.get('username'))
+
+2. The {% if request.endpoint == 'page_name' %}active{% endif %} 
+   highlights the current page
+
+3. Update app.py routes to include username in context:
+   
+   @app.route('/your-page')
+   @login_required
+   def your_page():
+       user_id = get_current_user()
+       return render_template('your_page.html', 
+                            user_id=user_id,
+                            username=session.get('username'))
+
+4. Files page should look like this in files.html:
+   
+   @app.route('/files')
+   @login_required
+   def files_page():
+       user_id = get_current_user()
+       initialize_user_data(user_id)
+       files_list = user_data[user_id].get('files', [])
+       
+       return render_template('files.html', 
+                            user_id=user_id,
+                            username=session.get('username'),
+                            files=files_list)
+-->

@@ -18,7 +18,7 @@ from embeder import create_embeddings_from_rfp_and_vendors
 from chatbot import create_chatbot
 from vendor_capability_extractor import VendorCapabilityExtractor
 import compliance_checker
-
+from Scorer import VendorScorer
 
 
 
@@ -170,6 +170,21 @@ class RFPAnalysisSystem:
         print(f"\n✅ Extraction complete: RFP + {len(results.get('vendors', {}))} vendors analyzed")
         
         return results
+    def score_vendors(self, rfp_analysis_file: str, vendor_analysis_files: Dict[str, str], vendor_chunks_files: Dict[str, str], output_dir: str):
+  
+       print("\n🎯 STEP 4: Scoring Vendors")
+       scorer = VendorScorer(api_key=self.api_key)
+ 
+       results = scorer.score_all_vendors(
+           rfp_analysis_file=rfp_analysis_file,
+           vendor_analysis_files=vendor_analysis_files,
+           rfp_chunks_file=str(self.chunks_dir / "rfp_chunks.json"),  # full text chunks
+           vendor_chunks_files=vendor_chunks_files,
+           output_dir=output_dir
+    )
+
+       return results
+
     
     def create_embeddings(self, rfp_json: str, vendor_jsons: List[str]) -> tuple:
         """
@@ -233,12 +248,12 @@ class RFPAnalysisSystem:
         return chatbot
     
     def run_full_pipeline(self, 
-                         rfp_file: str, 
-                         vendor_files: List[tuple],
-                         skip_extraction: bool = False,
-                         run_chatbot: bool = True) -> Dict:
+                        rfp_file: str, 
+                        vendor_files: List[tuple],
+                        skip_extraction: bool = False,
+                        run_chatbot: bool = True) -> Dict:
         """
-        Run the complete pipeline from start to finish.
+        Run the complete pipeline from start to finish with VendorScorer integrated.
         
         Args:
             rfp_file: Path to RFP document
@@ -276,54 +291,35 @@ class RFPAnalysisSystem:
             results["extraction"] = extraction_results
         else:
             print("\n⏭️  Skipping extraction step")
-            
-        # Step 3.5: Analyze Vendor Capabilities (optional)
-        vendor_json_folder = self.chunks_dir  # or wherever the vendor chunks are stored
+        
+        # Step 3.5: Analyze Vendor Capabilities
         print("\n🧠 STEP 3.5: Extracting Vendor Capabilities & Differentiators")
         extractor = VendorCapabilityExtractor(api_key=self.api_key)
         extractor.analyze_folder(str(self.chunks_dir))
-
-        # ⚖️ STEP 4: Evaluate Compliance Before Embeddings
-        print("\n⚖️ STEP 4: Evaluating Compliance Against Mandatory Requirements")
-        rfp_analysis_file = str(self.analysis_dir / "rfp_chunk_analysis.json")
-
-        # Collect all vendor analysis files automatically
+        
+        # Step 4: Score Vendors using VendorScorer
+        print("\n🎯 STEP 4: Scoring Vendors")
+        vendor_chunks_files = {name: v["json"] for name, v in vendor_results.items()}
+        
+        # Collect vendor analysis files
         vendor_analysis_files = {}
         for file in self.analysis_dir.glob("*_analysis.json"):
             name = file.stem.replace("_analysis", "")
             if name.lower() != "rfp_chunk":
                 vendor_analysis_files[name] = str(file)
-
-        compliance_checker.evaluate_all_vendors(rfp_analysis_file, vendor_analysis_files, "outputs/compliance")
-
-        # 🚫 STEP 4.5: Filter out non-compliant vendors before embedding
-        from compliance_checker import load_json
-        compliance_dir = Path("outputs/compliance")
-        non_compliant_vendors = []
-
-        for comp_file in compliance_dir.glob("*_compliance.json"):
-            data = load_json(comp_file)
-            vendor_name = comp_file.stem.replace("_compliance", "")
-            if not data.get("compliant", False):
-                non_compliant_vendors.append(vendor_name)
-
-        if non_compliant_vendors:
-            print(f"⚠️ The following vendors are non-compliant and will be skipped: {', '.join(non_compliant_vendors)}")
-
-        # Filter vendor_json_paths list to include only compliant ones
-        vendor_json_paths = [
-            v["json"] for name, v in vendor_results.items()
-            if name not in non_compliant_vendors
-        ]
-
-
-
         
-        # Step 5: Create Embeddings
-        vendor_json_paths = [v["json"] for v in vendor_results.values()]
+        scorer_results = self.score_vendors(
+            rfp_analysis_file=str(self.analysis_dir / "rfp_chunk_analysis.json"),
+            vendor_analysis_files=vendor_analysis_files,
+            vendor_chunks_files=vendor_chunks_files,
+            output_dir=str(self.output_dir / "scoring_results")
+        )
+        results["scoring"] = scorer_results
+        
+        # Step 5: Create Embeddings (all vendors included; you can filter top vendors if needed)
         faiss_path, metadata_path = self.create_embeddings(
             rfp_results["json"],
-            vendor_json_paths
+            [v["json"] for v in vendor_results.values()]
         )
         results["embeddings"] = {
             "faiss": faiss_path,
@@ -353,9 +349,10 @@ class RFPAnalysisSystem:
 
 
 def main():
-    """Command-line interface for the RFP Analysis System."""
+    """Run RFP Analysis pipeline and display vendor scoring dashboard."""
+    
     parser = argparse.ArgumentParser(
-        description="RFP Analysis System - Process RFPs and vendor responses for AI-powered analysis"
+        description="RFP Analysis System - Vendor Scoring Dashboard"
     )
     
     parser.add_argument(
@@ -420,7 +417,7 @@ def main():
                 name = Path(vendor_spec).stem
             vendor_files.append((path, name))
     
-    # Initialize system
+    # Initialize RFP Analysis System
     system = RFPAnalysisSystem(
         output_dir=args.output,
         openai_api_key=args.api_key,
@@ -428,7 +425,7 @@ def main():
         max_tokens=args.max_tokens
     )
     
-    # Run pipeline
+    # Run full pipeline
     results = system.run_full_pipeline(
         rfp_file=args.rfp,
         vendor_files=vendor_files,
@@ -436,7 +433,43 @@ def main():
         run_chatbot=not args.no_chatbot
     )
     
+    # Display vendor scoring dashboard
+    scoring_results = results.get("scoring", {})
+    
+    if scoring_results:
+        print("\n" + "="*60)
+        print("🏆 VENDOR SCORING DASHBOARD")
+        print("="*60)
+        
+        for vendor_name, score_data in scoring_results.items():
+            print(f"\n📌 Vendor: {vendor_name}")
+            print(f"   - Total Score: {score_data.get('total_score', 'N/A')}")
+            
+            # Detailed criteria scores
+            detailed = score_data.get("detailed_scores", {})
+            if detailed:
+                print("   - Detailed Scores:")
+                for criterion, value in detailed.items():
+                    print(f"       • {criterion}: {value}")
+            
+            # Strengths & Weaknesses
+            strengths = score_data.get("strengths", [])
+            weaknesses = score_data.get("weaknesses", [])
+            
+            if strengths:
+                print(f"   - Strengths: {', '.join(strengths)}")
+            if weaknesses:
+                print(f"   - Weaknesses: {', '.join(weaknesses)}")
+        
+        print("\n" + "="*60)
+        print("✅ Vendor scoring visualization complete.")
+        print("="*60)
+    else:
+        print("\n⚠️ No scoring results available.")
+    
     return results
+
+
 
 
 if __name__ == "__main__":
@@ -450,3 +483,4 @@ if __name__ == "__main__":
         import traceback
         traceback.print_exc()
         sys.exit(1)
+
