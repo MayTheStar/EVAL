@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - EVAL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</head>
+<body class="dashboard-page">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>EVAL</h2>
+                <p>Proposal Analysis</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="upload_rfp.html" class="nav-item">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Upload RFP</span>
+                </a>
+                <a href="upload_vendor.html" class="nav-item">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Upload Vendor</span>
+                </a>
+                <a href="chatbot.html" class="nav-item" id="chatbotLink">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-text">Chatbot</span>
+                </a>
+                <a href="files_uploaded.html" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Files Uploaded</span>
+                </a>
+                <a href="profile.html" class="nav-item active">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Profile</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="page-header">
+                <div>
+                    <h1>Profile</h1>
+                    <p class="page-subtitle">Manage your account and preferences</p>
+                </div>
+            </header>
+
+            <div class="profile-container">
+                <!-- Profile Info Card -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <span class="avatar-icon">👤</span>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="profileUsername">User</h2>
+                            <p id="profileEmail">user@example.com</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Member Since</span>
+                            <span class="stat-value" id="memberSince">January 2025</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Documents Processed</span>
+                            <span class="stat-value" id="docsProcessed">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Active Projects</span>
+                            <span class="stat-value" id="activeProjects">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="settings-section">
+                    <h2>⚙️ Account Settings</h2>
+                    
+                    <div class="settings-card">
+                        <h3>Profile Information</h3>
+                        <form id="profileForm" class="settings-form">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" name="username" disabled>
+                                <small>Username cannot be changed</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" placeholder="your@email.com">
+                            </div>
+
+                            <button type="submit" class="btn-submit">
+                                <span>💾 Save Changes</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Preferences</h3>
+                        <div class="preference-item">
+                            <label class="switch">
+                                <input type="checkbox" id="emailNotifications" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <div class="preference-info">
+                                <h4>Email Notifications</h4>
+                                <p>Receive email updates when processing is complete</p>
+                            </div>
+                        </div>
+
+                        <div class="preference-item">
+                            <label class="switch">
+                                <input type="checkbox" id="autoProcess">
+                                <span class="slider"></span>
+                            </label>
+                            <div class="preference-info">
+                                <h4>Auto-Process Documents</h4>
+                                <p>Automatically process documents after upload</p>
+                            </div>
+                        </div>
+
+                        <div class="preference-item">
+                            <label class="switch">
+                                <input type="checkbox" id="saveHistory" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <div class="preference-info">
+                                <h4>Save Processing History</h4>
+                                <p>Keep logs of all processing activities</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card danger-zone">
+                        <h3>⚠️ Danger Zone</h3>
+                        <div class="danger-actions">
+                            <div class="danger-item">
+                                <div>
+                                    <h4>Clear All Data</h4>
+                                    <p>Delete all uploaded files and processing results</p>
+                                </div>
+                                <button class="btn-danger" onclick="clearAllData()">Clear Data</button>
+                            </div>
+                            <div class="danger-item">
+                                <div>
+                                    <h4>Delete Account</h4>
+                                    <p>Permanently delete your account and all associated data</p>
+                                </div>
+                                <button class="btn-danger" onclick="deleteAccount()">Delete Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="info-section">
+                    <h2>ℹ️ System Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Version</span>
+                            <span class="info-value">1.0.0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Model</span>
+                            <span class="info-value">GPT-4o-mini</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Embedding Model</span>
+                            <span class="info-value">text-embedding-3-large</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value status-active">✅ Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

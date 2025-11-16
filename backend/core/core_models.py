@@ -6,7 +6,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from core.database import Base
+from database import Base
 
 # ================= USERS ===================
 class User(Base):
@@ -45,7 +45,7 @@ class RFPDocument(Base):
     processing_started_at = Column(TIMESTAMP)
     processing_completed_at = Column(TIMESTAMP)
     processing_error = Column(Text)
-    meta_info = Column(JSON)  # بدل metadata
+    meta_info = Column(JSON)  # Ø¨Ø¯Ù„ metadata
     project = relationship("Project", backref="rfp_documents")
     user = relationship("User", backref="rfp_documents")
 
@@ -66,7 +66,7 @@ class VendorDocument(Base):
     processing_started_at = Column(TIMESTAMP)
     processing_completed_at = Column(TIMESTAMP)
     processing_error = Column(Text)
-    meta_info = Column(JSON)  # بدل metadata
+    meta_info = Column(JSON)  # Ø¨Ø¯Ù„ metadata
     project = relationship("Project", backref="vendor_documents")
     user = relationship("User", backref="vendor_documents")
     rfp = relationship("RFPDocument", backref="vendor_documents")
@@ -85,7 +85,7 @@ class DocumentChunk(Base):
     headings = Column(JSON)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
     orig_indices = Column(JSON)
-    meta_info = Column(JSON)  # بدل metadata
+    meta_info = Column(JSON)  # Ø¨Ø¯Ù„ metadata
 
 # ================= RFP REQUIREMENTS ===================
 class RFPRequirement(Base):
@@ -100,7 +100,7 @@ class RFPRequirement(Base):
     evaluation_labels = Column(JSON)
     extracted_at = Column(TIMESTAMP, default=datetime.utcnow)
     is_mandatory = Column(Boolean, default=False)
-    meta_info = Column(JSON)  # بدل metadata
+    meta_info = Column(JSON)  # Ø¨Ø¯Ù„ metadata
 
 # ================= VENDOR CAPABILITIES ===================
 class VendorCapability(Base):
@@ -113,7 +113,7 @@ class VendorCapability(Base):
     category = Column(String(100))
     evaluation_labels = Column(JSON)
     extracted_at = Column(TIMESTAMP, default=datetime.utcnow)
-    meta_info = Column(JSON)  # بدل metadata
+    meta_info = Column(JSON)  # Ø¨Ø¯Ù„ metadata
 
 # ================= CHUNK ANALYSIS ===================
 class ChunkAnalysis(Base):
@@ -235,5 +235,5 @@ class ProcessingLog(Base):
     status = Column(String(20), nullable=False)
     error_message = Column(Text)
     duration_ms = Column(Integer)
-    meta_info = Column(JSON)  # بدل metadata
+    meta_info = Column(JSON)  # Ø¨Ø¯Ù„ metadata
     created_at = Column(TIMESTAMP, default=datetime.utcnow)

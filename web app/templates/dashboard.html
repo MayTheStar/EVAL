@@ -6,141 +6,146 @@
     <title>Dashboard - EVAL</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <div class="app-container">
+<body class="dashboard-page">
+    <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        <svg width="80" height="80" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="40" fill="#4A5F7F"/>
-                            <circle cx="40" cy="30" r="12" fill="white"/>
-                            <path d="M 20 60 Q 40 50, 60 60" fill="white"/>
-                        </svg>
-                    </div>
-                    <h3 class="user-title">USER PROFILE</h3>
-                    <p class="user-id">ID: {{ user_id[:12] }}</p>
-                </div>
+                <h2>EVAL</h2>
+                <p>Proposal Analysis</p>
             </div>
-            
             <nav class="sidebar-nav">
-                <a href="{{ url_for('dashboard') }}" class="nav-item active">
+                <a href="dashboard.html" class="nav-item active">
                     <span class="nav-icon">📊</span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="{{ url_for('upload_rfp_page') }}" class="nav-item">
-                    <span class="nav-icon">📁</span>
+                <a href="upload_rfp.html" class="nav-item">
+                    <span class="nav-icon">📄</span>
                     <span class="nav-text">Upload RFP</span>
                 </a>
-                <a href="#" class="nav-item" id="evaluation-nav">
-                    <span class="nav-icon">📋</span>
-                    <span class="nav-text">Evaluation Results</span>
+                <a href="upload_vendor.html" class="nav-item">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Upload Vendor</span>
                 </a>
-                <a href="{{ url_for('chatbot_page') }}" class="nav-item" id="chatbot-nav">
+                <a href="chatbot.html" class="nav-item" id="chatbotLink">
                     <span class="nav-icon">💬</span>
-                    <span class="nav-text">Chatbot Assistant</span>
+                    <span class="nav-text">Chatbot</span>
+                    <span class="nav-badge" id="chatbotBadge" style="display: none;">Ready</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">🔖</span>
-                    <span class="nav-text">Saved Analyses</span>
+                <a href="files_uploaded.html" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Files Uploaded</span>
                 </a>
-            </nav>
-            
-            <div class="sidebar-section">
-                <h4 class="section-title">COMPARE PROPOSALS</h4>
-            </div>
-            
-            <nav class="sidebar-nav sidebar-nav-bottom">
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📄</span>
-                    <span class="nav-text">Criteria Definitions</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">💡</span>
-                    <span class="nav-text">Insights</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text">Reports</span>
-                </a>
-                <a href="{{ url_for('files_page') }}" class="nav-item">
+                <a href="profile.html" class="nav-item">
                     <span class="nav-icon">👤</span>
-                    <span class="nav-text">My Profile</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-text">Settings</span>
+                    <span class="nav-text">Profile</span>
                 </a>
             </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
         </aside>
-        
+
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="dashboard-main">
             <header class="page-header">
-                <div class="logo-small">
-                    <span class="logo-text-small">EVAL</span>
+                <div>
+                    <h1>Dashboard</h1>
+                    <p class="page-subtitle">Overview of your RFP analysis workflow</p>
                 </div>
-                <h1 class="page-title">Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn-process" id="processButton" onclick="processDocuments()" disabled>
+                        <span class="button-text">🚀 Process Documents</span>
+                        <span class="button-loader" style="display: none;">
+                            <span class="spinner"></span>
+                        </span>
+                    </button>
+                </div>
             </header>
-            
-            <div class="dashboard-grid">
-                <!-- Upload RFP Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">📁</div>
-                    <h3 class="card-title">Upload RFP</h3>
-                    <p class="card-description">Upload your Request for Proposal document</p>
-                    <a href="{{ url_for('upload_rfp_page') }}" class="card-button">Upload</a>
-                    <div class="card-status" id="rfp-status"></div>
+
+            <!-- Status Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-content">
+                        <h3>RFP Document</h3>
+                        <p class="stat-value" id="rfpStatus">Not Uploaded</p>
+                        <span class="stat-badge badge-pending" id="rfpBadge">Pending</span>
+                    </div>
                 </div>
-                
-                <!-- Upload Vendor Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">📦</div>
-                    <h3 class="card-title">Upload Vendor Response</h3>
-                    <p class="card-description">Upload vendor proposal responses</p>
-                    <a href="{{ url_for('upload_vendor_page') }}" class="card-button">Upload</a>
-                    <div class="card-status" id="vendor-status"></div>
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-content">
+                        <h3>Vendor Responses</h3>
+                        <p class="stat-value" id="vendorCount">0 Uploaded</p>
+                        <span class="stat-badge badge-pending" id="vendorBadge">Pending</span>
+                    </div>
                 </div>
-                
-                <!-- Chatbot Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">💬</div>
-                    <h3 class="card-title">Chatbot Assistant</h3>
-                    <p class="card-description">Ask questions about your documents</p>
-                    <button class="card-button" id="chatbot-button">Open Chat</button>
-                    <div class="card-status" id="chatbot-status"></div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚙️</div>
+                    <div class="stat-content">
+                        <h3>Processing Status</h3>
+                        <p class="stat-value" id="processStatus">Not Started</p>
+                        <span class="stat-badge badge-pending" id="processBadge">Waiting</span>
+                    </div>
                 </div>
-                
-                <!-- Files Card -->
-                <div class="dashboard-card">
-                    <div class="card-icon">📄</div>
-                    <h3 class="card-title">My Files</h3>
-                    <p class="card-description">View and manage uploaded documents</p>
-                    <a href="{{ url_for('files_page') }}" class="card-button">View Files</a>
-                    <div class="card-status" id="files-status"></div>
+                <div class="stat-card">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-content">
+                        <h3>Chatbot</h3>
+                        <p class="stat-value" id="chatbotStatus">Not Ready</p>
+                        <span class="stat-badge badge-disabled" id="chatbotStatusBadge">Disabled</span>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Process Button -->
-            <div class="action-bar" id="process-bar" style="display: none;">
-                <button class="process-button" id="process-button">
-                    <span class="button-text">Process Documents & Prepare Chatbot</span>
-                    <span class="button-icon">▶️</span>
-                </button>
+
+            <!-- Vendor Scoring Dashboard (Shown after processing) -->
+            <div id="scoringDashboard" class="scoring-dashboard" style="display: none;">
+                <div class="section-header">
+                    <h2>🏆 Vendor Scoring Results</h2>
+                    <p>Comprehensive evaluation of all vendor proposals</p>
+                </div>
+                <div id="vendorScoresContainer" class="vendor-scores-grid"></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="upload_rfp.html" class="action-card">
+                        <span class="action-icon">📄</span>
+                        <h3>Upload RFP</h3>
+                        <p>Upload your Request for Proposal document</p>
+                    </a>
+                    <a href="upload_vendor.html" class="action-card">
+                        <span class="action-icon">📦</span>
+                        <h3>Upload Vendors</h3>
+                        <p>Add vendor response documents</p>
+                    </a>
+                    <a href="files_uploaded.html" class="action-card">
+                        <span class="action-icon">📁</span>
+                        <h3>View Files</h3>
+                        <p>Manage uploaded documents</p>
+                    </a>
+                    <a href="chatbot.html" class="action-card" id="chatbotAction">
+                        <span class="action-icon">💬</span>
+                        <h3>Ask Chatbot</h3>
+                        <p>Query your documents with AI</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Process Log -->
+            <div class="process-log" id="processLog" style="display: none;">
+                <h3>Processing Log</h3>
+                <div class="log-container" id="logContainer"></div>
             </div>
         </main>
     </div>
-    
-    <!-- Processing Modal -->
-    <div class="modal" id="processing-modal">
-        <div class="modal-content">
-            <div class="modal-loader"></div>
-            <h3>Processing Documents...</h3>
-            <p>This may take a few minutes. Please wait.</p>
-        </div>
-    </div>
-    
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+    <script src="main.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from core.core_config import settings
+from core_config import settings
 
 # إنشاء الاتصال بقاعدة البيانات
 engine = create_engine(settings.DATABASE_URL, echo=False)
@@ -18,4 +18,5 @@ def get_db():
         yield db
     finally:
         db.close()
+
 

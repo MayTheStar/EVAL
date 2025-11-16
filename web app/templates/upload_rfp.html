@@ -5,135 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload RFP - EVAL</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
-<body>
-    <div class="app-container">
-        <!-- Sidebar (same as dashboard) -->
+<body class="dashboard-page">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        <svg width="80" height="80" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="40" fill="#4A5F7F"/>
-                            <circle cx="40" cy="30" r="12" fill="white"/>
-                            <path d="M 20 60 Q 40 50, 60 60" fill="white"/>
-                        </svg>
-                    </div>
-                    <h3 class="user-title">USER PROFILE</h3>
-                    <p class="user-id">ID: {{ user_id[:12] }}</p>
-                </div>
+                <h2>EVAL</h2>
+                <p>Proposal Analysis</p>
             </div>
-            
             <nav class="sidebar-nav">
-                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                <a href="dashboard.html" class="nav-item">
                     <span class="nav-icon">📊</span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="{{ url_for('upload_rfp_page') }}" class="nav-item active">
-                    <span class="nav-icon">📁</span>
+                <a href="upload_rfp.html" class="nav-item active">
+                    <span class="nav-icon">📄</span>
                     <span class="nav-text">Upload RFP</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📋</span>
-                    <span class="nav-text">Evaluation Results</span>
+                <a href="upload_vendor.html" class="nav-item">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Upload Vendor</span>
                 </a>
-                <a href="{{ url_for('chatbot_page') }}" class="nav-item">
+                <a href="chatbot.html" class="nav-item" id="chatbotLink">
                     <span class="nav-icon">💬</span>
-                    <span class="nav-text">Chatbot Assistant</span>
+                    <span class="nav-text">Chatbot</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">🔖</span>
-                    <span class="nav-text">Saved Analyses</span>
+                <a href="files_uploaded.html" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Files Uploaded</span>
                 </a>
-            </nav>
-            
-            <div class="sidebar-section">
-                <h4 class="section-title">COMPARE PROPOSALS</h4>
-            </div>
-            
-            <nav class="sidebar-nav sidebar-nav-bottom">
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📄</span>
-                    <span class="nav-text">Criteria Definitions</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">💡</span>
-                    <span class="nav-text">Insights</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text">Reports</span>
-                </a>
-                <a href="{{ url_for('files_page') }}" class="nav-item">
+                <a href="profile.html" class="nav-item">
                     <span class="nav-icon">👤</span>
-                    <span class="nav-text">My Profile</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-text">Settings</span>
+                    <span class="nav-text">Profile</span>
                 </a>
             </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
         </aside>
-        
+
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="dashboard-main">
             <header class="page-header">
-                <div class="logo-small">
-                    <span class="logo-text-small">EVAL</span>
+                <div>
+                    <h1>Upload RFP Document</h1>
+                    <p class="page-subtitle">Upload your Request for Proposal document for analysis</p>
                 </div>
-                <h1 class="page-title">Upload RFP</h1>
             </header>
-            
-            <div class="upload-container">
-                <h2 class="upload-title">Upload RFP Documents</h2>
-                
-                <div class="upload-box" id="upload-box">
+
+            <div class="upload-section">
+                <div class="upload-card">
                     <div class="upload-icon">📄</div>
-                    <p class="upload-text">Drag & drop or click to choose files</p>
-                    <p class="upload-limit">⊙ Max file size: 10MB</p>
-                    <input type="file" id="file-input" accept=".pdf,.doc,.docx" style="display: none;">
-                </div>
-                
-                <div class="upload-info" id="upload-info" style="display: none;">
-                    <div class="file-preview">
-                        <span class="file-name" id="file-name"></span>
-                        <span class="file-size" id="file-size"></span>
+                    <h2>Upload RFP Document</h2>
+                    <p>Supported formats: PDF, DOC, DOCX (Max 10MB)</p>
+
+                    <form id="rfpUploadForm" enctype="multipart/form-data">
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="rfpFile" name="file" accept=".pdf,.doc,.docx" required>
+                            <label for="rfpFile" class="file-upload-label">
+                                <span class="upload-icon-large">☁️</span>
+                                <span class="upload-text">Click to select file or drag and drop</span>
+                                <span class="upload-hint">PDF, DOC, or DOCX (up to 10MB)</span>
+                            </label>
+                        </div>
+
+                        <div id="selectedFile" class="selected-file" style="display: none;">
+                            <div class="file-info">
+                                <span class="file-icon">📄</span>
+                                <div class="file-details">
+                                    <p class="file-name" id="fileName"></p>
+                                    <p class="file-size" id="fileSize"></p>
+                                </div>
+                                <button type="button" class="btn-remove" onclick="clearFile()">✕</button>
+                            </div>
+                        </div>
+
+                        <div id="uploadMessage" class="upload-message"></div>
+                        <div id="uploadProgress" class="upload-progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <p class="progress-text" id="progressText">Uploading...</p>
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="uploadButton" disabled>
+                            <span class="button-text">📤 Upload RFP Document</span>
+                            <span class="button-loader" style="display: none;">
+                                <span class="spinner"></span>
+                            </span>
+                        </button>
+                    </form>
+
+                    <div class="upload-info">
+                        <h3>ℹ️ What happens next?</h3>
+                        <ul>
+                            <li>Your RFP document will be parsed and analyzed</li>
+                            <li>Requirements and mandatory criteria will be extracted</li>
+                            <li>Upload vendor responses to compare against this RFP</li>
+                            <li>Process documents to enable AI chatbot and scoring</li>
+                        </ul>
                     </div>
-                    <button class="remove-file-button" id="remove-file">✕</button>
                 </div>
-                
-                <div class="upload-actions">
-                    <a href="{{ url_for('dashboard') }}" class="cancel-button">Cancel</a>
-                    <button class="import-button" id="import-button" disabled>Import</button>
+
+                <div class="info-sidebar">
+                    <div class="info-card">
+                        <h3>📋 Requirements</h3>
+                        <ul>
+                            <li>File format: PDF, DOC, or DOCX</li>
+                            <li>Maximum size: 10 MB</li>
+                            <li>Clear, readable text</li>
+                            <li>Structured document preferred</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>🔍 What We Extract</h3>
+                        <ul>
+                            <li>Mandatory requirements</li>
+                            <li>Optional requirements</li>
+                            <li>Technical specifications</li>
+                            <li>Evaluation criteria</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>⚡ Processing Time</h3>
+                        <p>Typically takes 30-60 seconds depending on document size and complexity.</p>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
-    
-    <!-- Success Modal -->
-    <div class="modal" id="success-modal">
-        <div class="modal-content modal-success">
-            <div class="success-icon">✓</div>
-            <h3>Success!</h3>
-            <p>RFP document uploaded successfully!</p>
-            <p class="modal-question">Would you like to upload vendor responses now?</p>
-            <div class="modal-actions">
-                <button class="modal-button modal-button-secondary" id="not-now-button">Not Now</button>
-                <button class="modal-button modal-button-primary" id="yes-button">Yes, Upload</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Error Modal -->
-    <div class="modal" id="error-modal">
-        <div class="modal-content modal-error">
-            <div class="error-icon">✕</div>
-            <h3>Upload Failed</h3>
-            <p id="error-message"></p>
-            <button class="modal-button modal-button-primary" id="close-error">OK</button>
-        </div>
-    </div>
-    
-    <script src="{{ url_for('static', filename='js/upload_rfp.js') }}"></script>
+
+    <script src="main.js"></script>
 </body>
 </html>

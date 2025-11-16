@@ -1,121 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Assistant - EVAL</title>
+    <title>AI Chatbot - EVAL</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
-
-<body>
-    <div class="app-container">
+<body class="dashboard-page">
+    <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        <svg width="80" height="80" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="40" fill="#4A5F7F" />
-                            <circle cx="40" cy="30" r="12" fill="white" />
-                            <path d="M 20 60 Q 40 50, 60 60" fill="white" />
-                        </svg>
-                    </div>
-                    <h3 class="user-title">USER PROFILE</h3>
-                    <p class="user-id">ID: {{ user_id[:12] }}</p>
-                </div>
+                <h2>EVAL</h2>
+                <p>Proposal Analysis</p>
             </div>
-
             <nav class="sidebar-nav">
-                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                <a href="dashboard.html" class="nav-item">
                     <span class="nav-icon">📊</span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="{{ url_for('upload_rfp_page') }}" class="nav-item">
-                    <span class="nav-icon">📁</span>
+                <a href="upload_rfp.html" class="nav-item">
+                    <span class="nav-icon">📄</span>
                     <span class="nav-text">Upload RFP</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📋</span>
-                    <span class="nav-text">Evaluation Results</span>
+                <a href="upload_vendor.html" class="nav-item">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Upload Vendor</span>
                 </a>
-                <a href="{{ url_for('chatbot_page') }}" class="nav-item active">
+                <a href="chatbot.html" class="nav-item active">
                     <span class="nav-icon">💬</span>
-                    <span class="nav-text">Chatbot Assistant</span>
+                    <span class="nav-text">Chatbot</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">🔖</span>
-                    <span class="nav-text">Saved Analyses</span>
+                <a href="files_uploaded.html" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Files Uploaded</span>
                 </a>
-            </nav>
-
-            <div class="sidebar-section">
-                <h4 class="section-title">COMPARE PROPOSALS</h4>
-            </div>
-
-            <nav class="sidebar-nav sidebar-nav-bottom">
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📄</span>
-                    <span class="nav-text">Criteria Definitions</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">💡</span>
-                    <span class="nav-text">Insights</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text">Reports</span>
-                </a>
-                <a href="{{ url_for('files_page') }}" class="nav-item">
+                <a href="profile.html" class="nav-item">
                     <span class="nav-icon">👤</span>
-                    <span class="nav-text">My Profile</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-text">Settings</span>
+                    <span class="nav-text">Profile</span>
                 </a>
             </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="dashboard-main chatbot-main">
             <header class="page-header">
-                <div class="logo-small">
-                    <span class="logo-text-small">EVAL</span>
+                <div>
+                    <h1>AI Chatbot</h1>
+                    <p class="page-subtitle">Ask questions about your RFP and vendor proposals</p>
                 </div>
-                <h1 class="page-title">Chatbot Assistant</h1>
+                <div class="chatbot-status">
+                    <span class="status-indicator status-active"></span>
+                    <span>Chatbot Ready</span>
+                </div>
             </header>
 
-            <div class="chat-container">
-                <div class="chat-welcome" id="chat-welcome">
-                    <h2 class="chat-welcome-title">What can I help with?</h2>
-                    <p class="chat-welcome-subtitle">Ask me anything about your RFP and vendor responses</p>
+            <div class="chatbot-container">
+                <div class="chat-window" id="chatWindow">
+                    <div class="chat-welcome">
+                        <div class="welcome-icon">🤖</div>
+                        <h2>Welcome to EVAL AI Assistant</h2>
+                        <p>I can help you analyze your RFP and vendor proposals. Ask me anything!</p>
+                        <div class="example-questions">
+                            <p><strong>Example questions:</strong></p>
+                            <ul>
+                                <li>"Which vendor has the best technical capabilities?"</li>
+                                <li>"What are the mandatory requirements in the RFP?"</li>
+                                <li>"Compare Vendor A and Vendor B on financial proposals"</li>
+                                <li>"Which vendors are non-compliant and why?"</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be added here -->
+                    </div>
                 </div>
 
-                <div class="chat-messages" id="chat-messages"></div>
-
                 <div class="chat-input-container">
-                    <div class="chat-input-wrapper">
-                        <textarea id="chat-input" class="chat-input" placeholder="Message .." rows="1"></textarea>
-                        <button class="attach-button" title="Attach file">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M10 2v16M2 10h16" stroke="currentColor" stroke-width="2" />
-                            </svg>
+                    <form id="chatForm" class="chat-form">
+                        <textarea 
+                            id="chatInput" 
+                            class="chat-input" 
+                            placeholder="Type your question here..."
+                            rows="1"
+                        ></textarea>
+                        <button type="submit" class="btn-send" id="sendButton">
+                            <span class="send-icon">📤</span>
                         </button>
-                        <button class="send-button" id="send-button">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3 20l18-8-18-8v6l12 2-12 2v6z" />
-                            </svg>
-                        </button>
-
+                    </form>
+                    <div class="chat-footer">
+                        <p>Powered by AI • Responses based on your uploaded documents</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Suggested Questions Sidebar -->
+            <div class="suggestions-sidebar">
+                <h3>💡 Suggested Questions</h3>
+                <div class="suggestion-buttons">
+                    <button class="suggestion-btn" onclick="askQuestion('Which vendor has the highest overall score?')">
+                        Highest scoring vendor?
+                    </button>
+                    <button class="suggestion-btn" onclick="askQuestion('What are the mandatory requirements?')">
+                        Mandatory requirements?
+                    </button>
+                    <button class="suggestion-btn" onclick="askQuestion('Which vendors failed compliance?')">
+                        Non-compliant vendors?
+                    </button>
+                    <button class="suggestion-btn" onclick="askQuestion('Compare technical capabilities of all vendors')">
+                        Compare technical skills
+                    </button>
+                    <button class="suggestion-btn" onclick="askQuestion('What are the key evaluation criteria?')">
+                        Evaluation criteria?
+                    </button>
                 </div>
             </div>
         </main>
     </div>
 
-    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    <script src="main.js"></script>
 </body>
-
 </html>
