@@ -7,41 +7,45 @@
    CSS Variables & Theme
    ============================================ */
 :root {
-    /* Primary Colors - Blue Gradient Theme */
-    --primary-dark: #2c5282;
-    --primary: #3b82f6;
-    --primary-light: #60a5fa;
-    --primary-lighter: #93c5fd;
+    /* Primary Colors - Modern Teal Theme */
+    --primary-dark: #1a4d4d;
+    --primary: #2d6a6a;
+    --primary-medium: #3d7d7d;
+    --primary-light: #5a9b9b;
+    --primary-lighter: #a8c9c9;
+    --primary-accent: #7fb8b8;
     
-    /* Secondary Colors - Teal Accent */
-    --secondary: #14b8a6;
-    --secondary-light: #5eead4;
-    --secondary-dark: #0f766e;
+    /* Secondary Colors - Light Teal/Mint Accent */
+    --secondary: #88d4c0;
+    --secondary-light: #b0e4d4;
+    --secondary-lighter: #d4f4ea;
+    --secondary-dark: #5fa896;
     
     /* Neutral Colors */
     --white: #ffffff;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
+    --gray-50: #f8fafa;
+    --gray-100: #f0f4f4;
+    --gray-200: #e1e8e8;
+    --gray-300: #c7d3d3;
+    --gray-400: #9eabab;
+    --gray-500: #6b7878;
+    --gray-600: #4d5858;
+    --gray-700: #3a4444;
+    --gray-800: #283030;
+    --gray-900: #1a2020;
     
     /* Status Colors */
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --info: #3b82f6;
+    --success: #5fa896;
+    --warning: #e8a54d;
+    --error: #e86d6d;
+    --info: #7fb8b8;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, #2563eb 0%, #1e40af 50%, #3b82f6 100%);
-    --gradient-secondary: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-    --gradient-light: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    --gradient-dark: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    --gradient-primary: linear-gradient(135deg, #2d6a6a 0%, #1a4d4d 100%);
+    --gradient-secondary: linear-gradient(135deg, #88d4c0 0%, #5fa896 100%);
+    --gradient-light: linear-gradient(135deg, #d4f4ea 0%, #b0e4d4 100%);
+    --gradient-dark: linear-gradient(135deg, #1a4d4d 0%, #0f3333 100%);
+    --gradient-accent: linear-gradient(135deg, #a8c9c9 0%, #7fb8b8 100%);
     
     /* Spacing */
     --spacing-xs: 0.25rem;
@@ -60,11 +64,11 @@
     --radius-full: 9999px;
     
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --shadow-sm: 0 1px 2px 0 rgba(45, 106, 106, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(45, 106, 106, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(45, 106, 106, 0.15);
+    --shadow-xl: 0 20px 25px -5px rgba(45, 106, 106, 0.2);
+    --shadow-2xl: 0 25px 50px -12px rgba(45, 106, 106, 0.25);
     
     /* Transitions */
     --transition-fast: 150ms ease;
@@ -984,7 +988,7 @@ a:hover {
 }
 
 .upload-info li::before {
-    content: "✓";
+    content: "âœ“";
     color: var(--success);
     font-weight: bold;
 }
@@ -1895,4 +1899,254 @@ input:checked + .slider:before {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--gray-500);
+}
+
+/* Modern Teal Theme Overrides for EVAL Dashboard */
+
+/* Sidebar Modern Styling */
+.sidebar {
+    background: linear-gradient(180deg, #2d6a6a 0%, #1a4d4d 100%);
+    border-right: none;
+    box-shadow: 4px 0 12px rgba(26, 77, 77, 0.15);
+}
+
+.sidebar-header {
+    padding: 2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-header h2 {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-header p {
+    color: #a8c9c9;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.nav-item {
+    color: #a8c9c9;
+    border-right: 3px solid transparent;
+    text-decoration: none;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.nav-item.active {
+    background: rgba(136, 212, 192, 0.15);
+    color: #ffffff;
+    border-right: 3px solid #88d4c0;
+}
+
+.nav-icon {
+    filter: brightness(1.2);
+}
+
+.nav-badge {
+    background: #88d4c0;
+    color: #1a4d4d;
+}
+
+.btn-logout {
+    background: rgba(255, 255, 255, 0.1);
+    color: #a8c9c9;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-logout:hover {
+    background: #e86d6d;
+    color: white;
+    border-color: #e86d6d;
+}
+
+/* Process Button Styling */
+.btn-process {
+    background: linear-gradient(135deg, #2d6a6a 0%, #1a4d4d 100%);
+}
+
+.btn-process:hover:not(:disabled) {
+    background: linear-gradient(135deg, #3d7d7d 0%, #2d6a6a 100%);
+}
+
+/* Stats Cards */
+.stat-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafa 100%);
+}
+
+.stat-card:hover {
+    border-color: #a8c9c9;
+}
+
+/* Quick Actions */
+.action-card:hover {
+    border-color: #88d4c0;
+    background: #f8fafa;
+}
+
+/* Page Headers */
+.page-header h1 {
+    color: #1a4d4d;
+}
+
+.page-subtitle {
+    color: #6b7878;
+}
+
+/* Vendor Card Enhancements */
+.vendor-card {
+    transition: all 0.3s ease;
+}
+
+.vendor-card:hover {
+    border-color: #88d4c0;
+}
+
+.vendor-rank {
+    background: linear-gradient(135deg, #7fb8b8 0%, #5a9b9b 100%);
+    font-weight: 800;
+}
+
+.vendor-rank.rank-1 {
+    background: linear-gradient(135deg, #88d4c0 0%, #5fa896 100%);
+    box-shadow: 0 4px 12px rgba(136, 212, 192, 0.4);
+}
+
+.score-value {
+    color: #2d6a6a;
+    font-weight: 800;
+}
+
+.score-item {
+    transition: all 0.2s ease;
+}
+
+.score-item:hover {
+    background: #f8fafa;
+    border-color: #a8c9c9;
+}
+
+/* Chatbot Widget Styling */
+.chatbot-toggle {
+    background: linear-gradient(135deg, #2d6a6a 0%, #1a4d4d 100%);
+}
+
+.chatbot-toggle:hover {
+    box-shadow: 0 8px 24px rgba(45, 106, 106, 0.4);
+}
+
+.chatbot-widget {
+    border-color: #a8c9c9;
+}
+
+.chatbot-widget-header {
+    background: linear-gradient(135deg, #2d6a6a 0%, #1a4d4d 100%);
+}
+
+/* Badge Colors */
+.badge-success {
+    background: #d4f4ea;
+    color: #0f3333;
+}
+
+.badge-warning {
+    background: #fff4e0;
+    color: #7d5a0f;
+}
+
+.badge-active {
+    background: #d4f4ea;
+    color: #1a4d4d;
+}
+
+/* Loading States */
+.spinner {
+    border-color: #a8c9c9;
+    border-top-color: transparent;
+}
+
+/* Form Elements */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #7fb8b8;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(127, 184, 184, 0.1);
+}
+
+/* Links */
+a {
+    color: #2d6a6a;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #1a4d4d;
+}
+
+/* Progress Bars */
+.progress-bar {
+    background: #e1e8e8;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #88d4c0 0%, #5fa896 100%);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f0f4f4;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c7d3d3;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9eabab;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+    }
+    
+    .dashboard-main {
+        margin-left: 0;
+        max-width: 100%;
+    }
+    
+    .vendor-scores-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chatbot-widget {
+        width: 100%;
+        right: 0;
+        left: 0;
+        border-radius: 0;
+    }
+    
+    .chatbot-toggle {
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+    }
 }

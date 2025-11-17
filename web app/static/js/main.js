@@ -896,3 +896,142 @@ if (typeof module !== 'undefined' && module.exports) {
         formatDate
     };
 }
+
+// Additional JavaScript for enhanced dashboard with vendor scoring
+
+// Function to load and display vendor scores
+async function loadVendorScores() {
+    try {
+        const response = await fetch('/api/get-vendor-scores');
+        const data = await response.json();
+        
+        if (data.success && data.scores && data.scores.length > 0) {
+            displayVendorScores(data.scores);
+            
+            // Hide empty state, show scoring dashboard
+            const emptyState = document.getElementById('emptyState');
+            const scoringDashboard = document.getElementById('scoringDashboard');
+            if (emptyState) emptyState.style.display = 'none';
+            if (scoringDashboard) scoringDashboard.style.display = 'block';
+        } else {
+            // Show empty state
+            const emptyState = document.getElementById('emptyState');
+            const scoringDashboard = document.getElementById('scoringDashboard');
+            if (emptyState) emptyState.style.display = 'block';
+            if (scoringDashboard) scoringDashboard.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading vendor scores:', error);
+    }
+}
+
+// Function to display vendor scores in the dashboard
+function displayVendorScores(scores) {
+    const container = document.getElementById('vendorScoresContainer');
+    if (!container) return;
+    
+    // Sort scores by total score (descending)
+    scores.sort((a, b) => b.total_score - a.total_score);
+    
+    // Clear container
+    container.innerHTML = '';
+    
+    // Create vendor cards
+    scores.forEach((vendor, index) => {
+        const rank = index + 1;
+        const isTopVendor = rank === 1;
+        
+        const card = document.createElement('div');
+        card.className = `vendor-card ${isTopVendor ? 'top-vendor' : ''}`;
+        
+        // Calculate percentage
+        const percentage = ((vendor.total_score / vendor.max_score) * 100).toFixed(1);
+        
+        card.innerHTML = `
+            <div class="vendor-header">
+                <div>
+                    <div class="vendor-name">${escapeHtml(vendor.vendor_name)}</div>
+                </div>
+                <div class="vendor-rank ${rank === 1 ? 'rank-1' : ''}">${rank}</div>
+            </div>
+            
+            <div class="overall-score">
+                <div class="score-label">Overall Score</div>
+                <div class="score-value">
+                    ${vendor.total_score.toFixed(1)}
+                    <span class="score-max">/ ${vendor.max_score}</span>
+                </div>
+                <div style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.9rem;">
+                    ${percentage}%
+                </div>
+            </div>
+            
+            <div class="score-breakdown">
+                ${vendor.technical_score !== undefined ? `
+                    <div class="score-item">
+                        <span class="score-item-label">Technical Score</span>
+                        <span class="score-item-value">${vendor.technical_score.toFixed(1)}</span>
+                    </div>
+                ` : ''}
+                
+                ${vendor.financial_score !== undefined ? `
+                    <div class="score-item">
+                        <span class="score-item-label">Financial Score</span>
+                        <span class="score-item-value">${vendor.financial_score.toFixed(1)}</span>
+                    </div>
+                ` : ''}
+                
+                ${vendor.experience_score !== undefined ? `
+                    <div class="score-item">
+                        <span class="score-item-label">Experience Score</span>
+                        <span class="score-item-value">${vendor.experience_score.toFixed(1)}</span>
+                    </div>
+                ` : ''}
+                
+                ${vendor.compliance_score !== undefined ? `
+                    <div class="score-item">
+                        <span class="score-item-label">Compliance Score</span>
+                        <span class="score-item-value">${vendor.compliance_score.toFixed(1)}</span>
+                    </div>
+                ` : ''}
+            </div>
+            
+            ${vendor.compliance_status !== undefined ? `
+                <div class="compliance-badge ${vendor.compliance_status === 'compliant' ? 'compliance-pass' : 'compliance-fail'}">
+                    ${vendor.compliance_status === 'compliant' ? '✓ Compliant' : '✗ Non-Compliant'}
+                </div>
+            ` : ''}
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Enhanced updateDashboardUI function to load vendor scores
+const originalUpdateDashboardUI = window.updateDashboardUI;
+window.updateDashboardUI = function(data) {
+    // Call original function if it exists
+    if (originalUpdateDashboardUI) {
+        originalUpdateDashboardUI(data);
+    }
+    
+    // Load vendor scores if processed
+    if (data.processed) {
+        loadVendorScores();
+    }
+};
+
+// Load vendor scores on page load if already processed
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.pathname.includes('dashboard')) {
+        // Check if processed and load scores
+        setTimeout(loadVendorScores, 1000);
+    }
+});

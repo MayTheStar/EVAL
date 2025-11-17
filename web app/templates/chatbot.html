@@ -5,7 +5,353 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chatbot - EVAL</title>
     <link rel="stylesheet" href="/static/css/style.css">
-    <script src="/static/js/main.js"></script>
+    <link rel="stylesheet" href="/static/css/modern-theme.css">
+    <style>
+        /* Full Page Chatbot Styling with Modern Teal Theme */
+        .chatbot-main {
+            height: calc(100vh - 4rem);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            background: #ffffff;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e8e8;
+        }
+
+        .page-header h1 {
+            color: #1a4d4d;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #6b7878;
+            font-size: 0.95rem;
+        }
+
+        .chatbot-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #5fa896;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #5fa896;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .chatbot-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 1rem;
+            border: 2px solid #e1e8e8;
+            overflow: hidden;
+        }
+
+        .chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: #f8fafa;
+        }
+
+        .chat-welcome {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #4d5858;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chat-welcome h2 {
+            font-size: 1.8rem;
+            color: #2d6a6a;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .chat-welcome p {
+            font-size: 1rem;
+            color: #6b7878;
+            margin-bottom: 2rem;
+        }
+
+        .example-questions {
+            margin-top: 2rem;
+            text-align: left;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 2px solid #e1e8e8;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .example-questions strong {
+            color: #2d6a6a;
+            font-size: 1.1rem;
+        }
+
+        .example-questions ul {
+            margin-top: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .example-questions li {
+            margin: 0.75rem 0;
+            color: #6b7878;
+            font-size: 0.95rem;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 1rem 1.25rem;
+            border-radius: 1rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #2d6a6a 0%, #3d7d7d 100%);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: white;
+            color: #283030;
+            border: 2px solid #e1e8e8;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .message.typing {
+            align-self: flex-start;
+            background: white;
+            border: 2px solid #e1e8e8;
+            padding: 1rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #7fb8b8;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-12px);
+                opacity: 1;
+            }
+        }
+
+        .chat-input-container {
+            padding: 1.5rem;
+            background: white;
+            border-top: 2px solid #e1e8e8;
+        }
+
+        .chat-form {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e1e8e8;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: none;
+            max-height: 150px;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #7fb8b8;
+            box-shadow: 0 0 0 3px rgba(127, 184, 184, 0.1);
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #2d6a6a 0%, #3d7d7d 100%);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 106, 106, 0.3);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-footer {
+            text-align: center;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            color: #9eabab;
+        }
+
+        .suggestions-sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-left: 2px solid #e1e8e8;
+            width: 300px;
+            overflow-y: auto;
+        }
+
+        .suggestions-sidebar h3 {
+            color: #2d6a6a;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .suggestion-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .suggestion-btn {
+            background: white;
+            border: 2px solid #e1e8e8;
+            padding: 0.875rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #3d7d7d;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .suggestion-btn:hover {
+            background: #f8fafa;
+            border-color: #7fb8b8;
+            color: #2d6a6a;
+            transform: translateX(4px);
+        }
+
+        /* Scrollbar styling */
+        .chat-window::-webkit-scrollbar,
+        .suggestions-sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-window::-webkit-scrollbar-track,
+        .suggestions-sidebar::-webkit-scrollbar-track {
+            background: #f0f4f4;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb,
+        .suggestions-sidebar::-webkit-scrollbar-thumb {
+            background: #c7d3d3;
+            border-radius: 4px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb:hover,
+        .suggestions-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #9eabab;
+        }
+
+        /* Layout adjustments */
+        .chatbot-main {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chatbot-layout {
+            flex: 1;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .suggestions-sidebar {
+                display: none;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
 </head>
 <body class="dashboard-page">
     <div class="dashboard-container">
@@ -62,69 +408,178 @@
                 </div>
             </header>
 
-            <div class="chatbot-container">
-                <div class="chat-window" id="chatWindow">
-                    <div class="chat-welcome">
-                        <div class="welcome-icon">🤖</div>
-                        <h2>Welcome to EVAL AI Assistant</h2>
-                        <p>I can help you analyze your RFP and vendor proposals. Ask me anything!</p>
-                        <div class="example-questions">
-                            <p><strong>Example questions:</strong></p>
-                            <ul>
-                                <li>"Which vendor has the best technical capabilities?"</li>
-                                <li>"What are the mandatory requirements in the RFP?"</li>
-                                <li>"Compare Vendor A and Vendor B on financial proposals"</li>
-                                <li>"Which vendors are non-compliant and why?"</li>
-                            </ul>
+            <div class="chatbot-layout">
+                <div class="chatbot-container">
+                    <div class="chat-window" id="chatWindow">
+                        <div class="chat-welcome">
+                            <div class="welcome-icon">🤖</div>
+                            <h2>Welcome to EVAL AI Assistant</h2>
+                            <p>I can help you analyze your RFP and vendor proposals. Ask me anything!</p>
+                            <div class="example-questions">
+                                <p><strong>Example questions:</strong></p>
+                                <ul>
+                                    <li>"Which vendor has the best technical capabilities?"</li>
+                                    <li>"What are the mandatory requirements in the RFP?"</li>
+                                    <li>"Compare Vendor A and Vendor B on financial proposals"</li>
+                                    <li>"Which vendors are non-compliant and why?"</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages will be added here -->
                         </div>
                     </div>
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- Messages will be added here -->
+
+                    <div class="chat-input-container">
+                        <form id="chatForm" class="chat-form">
+                            <textarea 
+                                id="chatInput" 
+                                class="chat-input" 
+                                placeholder="Type your question here..."
+                                rows="1"
+                            ></textarea>
+                            <button type="submit" class="btn-send" id="sendButton">
+                                <span class="send-icon">📤</span>
+                            </button>
+                        </form>
+                        <div class="chat-footer">
+                            <p>Powered by AI • Responses based on your uploaded documents</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="chat-input-container">
-                    <form id="chatForm" class="chat-form">
-                        <textarea 
-                            id="chatInput" 
-                            class="chat-input" 
-                            placeholder="Type your question here..."
-                            rows="1"
-                        ></textarea>
-                        <button type="submit" class="btn-send" id="sendButton">
-                            <span class="send-icon">📤</span>
+                <!-- Suggested Questions Sidebar -->
+                <div class="suggestions-sidebar">
+                    <h3>💡 Suggested Questions</h3>
+                    <div class="suggestion-buttons">
+                        <button class="suggestion-btn" onclick="askQuestion('Which vendor has the highest overall score?')">
+                            Highest scoring vendor?
                         </button>
-                    </form>
-                    <div class="chat-footer">
-                        <p>Powered by AI • Responses based on your uploaded documents</p>
+                        <button class="suggestion-btn" onclick="askQuestion('What are the mandatory requirements?')">
+                            Mandatory requirements?
+                        </button>
+                        <button class="suggestion-btn" onclick="askQuestion('Which vendors failed compliance?')">
+                            Non-compliant vendors?
+                        </button>
+                        <button class="suggestion-btn" onclick="askQuestion('Compare technical capabilities of all vendors')">
+                            Compare technical skills
+                        </button>
+                        <button class="suggestion-btn" onclick="askQuestion('What are the key evaluation criteria?')">
+                            Evaluation criteria?
+                        </button>
+                        <button class="suggestion-btn" onclick="askQuestion('Which vendor offers the best value for money?')">
+                            Best value vendor?
+                        </button>
                     </div>
-                </div>
-            </div>
-
-            <!-- Suggested Questions Sidebar -->
-            <div class="suggestions-sidebar">
-                <h3>💡 Suggested Questions</h3>
-                <div class="suggestion-buttons">
-                    <button class="suggestion-btn" onclick="askQuestion('Which vendor has the highest overall score?')">
-                        Highest scoring vendor?
-                    </button>
-                    <button class="suggestion-btn" onclick="askQuestion('What are the mandatory requirements?')">
-                        Mandatory requirements?
-                    </button>
-                    <button class="suggestion-btn" onclick="askQuestion('Which vendors failed compliance?')">
-                        Non-compliant vendors?
-                    </button>
-                    <button class="suggestion-btn" onclick="askQuestion('Compare technical capabilities of all vendors')">
-                        Compare technical skills
-                    </button>
-                    <button class="suggestion-btn" onclick="askQuestion('What are the key evaluation criteria?')">
-                        Evaluation criteria?
-                    </button>
                 </div>
             </div>
         </main>
     </div>
 
     <script src="/static/js/main.js"></script>
+    <script>
+        // Auto-resize textarea
+        const chatInput = document.getElementById('chatInput');
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Handle form submission
+        document.getElementById('chatForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                // Send to backend
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: message })
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Add assistant response
+                if (data.answer) {
+                    addMessage(data.answer, 'assistant');
+                } else if (data.error) {
+                    addMessage('Sorry, I encountered an error: ' + data.error, 'assistant');
+                } else {
+                    addMessage('Sorry, I could not process your request.', 'assistant');
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('Sorry, I encountered a connection error. Please try again.', 'assistant');
+            }
+        });
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message typing';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            
+            // Scroll to bottom
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+        }
+
+        // Handle Enter key (submit) and Shift+Enter (new line)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
 </body>
 </html>

@@ -14,23 +14,44 @@ from datetime import datetime
 import shutil
 import sys
 
-# ---------------- Path setup ----------------
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# --------------------------------------------
+# Python Path Setup (Fixing Imports)
+# --------------------------------------------
+import sys
+import os
+from pathlib import Path
 
-# Add backend/core to Python path
-backend_core_path = Path(__file__).resolve().parent.parent / "backend" / "core"
-sys.path.insert(0, str(backend_core_path))
+# Get the absolute path to the "web app" directory
+CURRENT_DIR = Path(__file__).resolve().parent
 
+# Get the project root (one level above "web app")
+ROOT_DIR = CURRENT_DIR.parent
+
+# Path to ai_engine folder
+AI_ENGINE_DIR = ROOT_DIR / "ai_engine"
+
+# Path to backend/core
+BACKEND_CORE_DIR = ROOT_DIR / "backend" / "core"
+
+# Add paths to Python import path
+sys.path.insert(0, str(ROOT_DIR))          # main project
+sys.path.insert(0, str(AI_ENGINE_DIR))     # ai_engine
+sys.path.insert(0, str(BACKEND_CORE_DIR))  # backend/core
+
+print("---- PYTHON PATH CONFIG ----")
+print("ROOT_DIR:", ROOT_DIR)
+print("AI_ENGINE_DIR:", AI_ENGINE_DIR)
+print("BACKEND_CORE_DIR:", BACKEND_CORE_DIR)
+print("--------------------------------")
 # ---------------- Import database and models ----------------
 from database import SessionLocal, Base, engine
 from core_models import User, Project, RFPDocument, VendorDocument, VendorEvaluation
-
 # ---------------- Import AI modules ----------------
 try:
-    from main import RFPAnalysisSystem
+    from ai_engine.main import RFPAnalysisSystem
     from chatbot import create_chatbot, load_compliance_results
 except ImportError as e:
-    print(f"Error importing modules: {e}")
+    print(f"[IMPORT ERROR] {e}")
     sys.exit(1)
 
 # ---------------- App setup ----------------
@@ -196,9 +217,9 @@ def dashboard():
     for v in user_data[user_id].get("vendor_files", []):
         name = v["vendor_name"]
         if name in compliance_results:
-            v["compliance"] = "✔ Compliant" if compliance_results[name]["compliant"] else "❌ Disqualified"
+            v["compliance"] = "âœ” Compliant" if compliance_results[name]["compliant"] else "âŒ Disqualified"
         else:
-            v["compliance"] = "⏳ Pending"
+            v["compliance"] = "â³ Pending"
 
     return render_template(
         "dashboard.html",
@@ -391,9 +412,9 @@ def process_documents():
         non_compliant = [name for name, data in compliance_results.items() if not data.get("compliant", False)]
         for v in user_data[user_id]["vendor_files"]:
             if v["vendor_name"] in non_compliant:
-                v["compliance"] = "❌ Disqualified"
+                v["compliance"] = "âŒ Disqualified"
             else:
-                v["compliance"] = "✔ Compliant"
+                v["compliance"] = "âœ” Compliant"
 
         # Store embeddings
         user_data[user_id]["embeddings"] = {
@@ -478,6 +499,93 @@ def delete_file():
         return jsonify({"success": True, "message": "File deleted successfully"})
     except Exception as e:
         return jsonify({"success": False, "message": f"Error: {e}"}), 500
+
+# ---------------- Vendor Scoring API ----------------
+@app.route("/api/get-vendor-scores")
+def get_vendor_scores():
+    """Get vendor scoring results for display in dashboard."""
+    user_id = get_user_id()
+    
+    if user_id not in user_data:
+        return jsonify({"success": False, "message": "No user data found", "scores": []})
+    
+    if not user_data[user_id].get("processed", False):
+        return jsonify({"success": False, "message": "Documents not processed yet", "scores": []})
+    
+    try:
+        output_folder = get_output_folder(user_id)
+        
+        # Try to find scoring_summary.json in scoring_results directory
+        scoring_file = output_folder / "scoring_results" / "scoring_summary.json"
+        
+        if not scoring_file.exists():
+            # Try alternate location
+            scoring_file = output_folder / "scoring" / "scoring_summary.json"
+        
+        if not scoring_file.exists():
+            return jsonify({"success": False, "message": "No scoring results found", "scores": []})
+        
+        # Load scoring data
+        with open(scoring_file, 'r', encoding='utf-8') as f:
+            scoring_data = json.load(f)
+        
+        # Load compliance data
+        compliance_results = load_compliance_results(str(COMPLIANCE_DIR))
+        
+        # Extract vendor scores from the nested structure
+        vendors_data = scoring_data.get("vendors", {})
+        
+        # Format scores for frontend
+        vendor_scores = []
+        for vendor_name, score_data in vendors_data.items():
+            # Determine compliance status
+            compliance_status = "compliant"
+            if vendor_name in compliance_results:
+                compliance_status = "compliant" if compliance_results[vendor_name].get("compliant", False) else "non-compliant"
+            
+            # Calculate max score (sum of all category scores if available)
+            max_score = 100.0
+            
+            vendor_score = {
+                "vendor_name": vendor_name,
+                "total_score": score_data.get("total_score", 0),
+                "max_score": max_score,
+                "technical_score": score_data.get("technical_score", 0),
+                "financial_score": score_data.get("financial_score", 0),
+                "experience_score": score_data.get("experience_score", 0),
+                "compliance_score": score_data.get("mandatory_compliance_score", 0),
+                "methodology_score": score_data.get("methodology_score", 0),
+                "innovation_score": score_data.get("innovation_score", 0),
+                "confidence": score_data.get("confidence_score", 0),
+                "compliance_status": compliance_status,
+                "strengths": score_data.get("strengths", [])[:3],  # Limit to top 3
+                "weaknesses": score_data.get("weaknesses", [])[:3],  # Limit to top 3
+                "is_compliant": score_data.get("is_compliant", True),
+                "disqualification_reason": score_data.get("disqualification_reason"),
+                "met_requirements": score_data.get("met_requirements", 0),
+                "total_requirements": score_data.get("total_requirements", 0)
+            }
+            vendor_scores.append(vendor_score)
+        
+        # Sort by total score descending
+        vendor_scores.sort(key=lambda x: x["total_score"], reverse=True)
+        
+        return jsonify({
+            "success": True,
+            "scores": vendor_scores,
+            "count": len(vendor_scores),
+            "metadata": scoring_data.get("evaluation_metadata", {})
+        })
+        
+    except Exception as e:
+        print(f"Error loading vendor scores: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "success": False,
+            "message": f"Error loading scores: {str(e)}",
+            "scores": []
+        })
 
 # ---------------- Run ----------------
 if __name__ == "__main__":
