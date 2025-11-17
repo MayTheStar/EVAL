@@ -128,7 +128,6 @@ evaluation/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/rfp-evaluation-system.git
 cd rfp-evaluation-system
 ```
 
@@ -298,7 +297,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- Your Name - Initial work
+- Rayana Aljuaid
+- May Alotaibi
+- Ghadi Aljuhani
+- Teif Alshareef
+- Mawadah Alsufiyani
 
 ## 🙏 Acknowledgments
 
@@ -311,8 +314,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support, please:
 - Open an issue on GitHub
-- Contact: your.email@example.com
-- Documentation: [Wiki](https://github.com/yourusername/rfp-evaluation-system/wiki)
+- Contact: rayanaaljuaid@gmail.com
+
 
 ## 🗺️ Roadmap
 
