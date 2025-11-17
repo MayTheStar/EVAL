@@ -29,21 +29,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Page-specific initializations
     const currentPage = window.location.pathname;
     
-    if (currentPage.includes('dashboard.html')) {
+    if (currentPage.includes('dashboard')) {
         initDashboard();
-    } else if (currentPage.includes('upload_rfp.html')) {
+    } else if (currentPage.includes('upload-rfp')) {
         initUploadRFP();
-    } else if (currentPage.includes('upload_vendor.html')) {
+    } else if (currentPage.includes('upload-vendor')) {
         initUploadVendor();
-    } else if (currentPage.includes('chatbot.html')) {
+    } else if (currentPage.includes('chatbot')) {
         initChatbot();
-    } else if (currentPage.includes('files_uploaded.html')) {
+    } else if (currentPage.includes('files')) {
         initFilesPage();
-    } else if (currentPage.includes('profile.html')) {
+    } else if (currentPage.includes('profile')) {
         initProfile();
-    } else if (currentPage.includes('login.html')) {
+    } else if (currentPage.includes('login')) {
         initLogin();
-    } else if (currentPage.includes('register.html')) {
+    } else if (currentPage.includes('register')) {
         initRegister();
     }
 });
@@ -78,7 +78,8 @@ function updateActiveNav() {
     
     navItems.forEach(item => {
         item.classList.remove('active');
-        if (item.getAttribute('href') && currentPage.includes(item.getAttribute('href'))) {
+        const href = item.getAttribute('href');
+        if (href && currentPage.includes(href.replace('/', ''))) {
             item.classList.add('active');
         }
     });
@@ -131,7 +132,7 @@ async function handleLogin(e) {
         const data = await response.json();
         
         if (data.success) {
-            window.location.href = data.redirect || 'dashboard.html';
+            window.location.href = data.redirect || '/dashboard';
         } else {
             showMessage(errorMsg, data.message || 'Login failed', 'error');
         }
@@ -185,7 +186,7 @@ async function handleRegister(e) {
         const data = await response.json();
         
         if (data.success) {
-            window.location.href = data.redirect || 'dashboard.html';
+            window.location.href = data.redirect || '/dashboard';
         } else {
             showMessage(errorMsg, data.message || 'Registration failed', 'error');
         }
@@ -256,52 +257,42 @@ function updateDashboardUI(data) {
     const processButton = document.getElementById('processButton');
     if (processStatus && processBadge) {
         if (data.processed) {
-            processStatus.textContent = 'Complete';
+            processStatus.textContent = 'Completed';
             processBadge.textContent = 'Done';
             processBadge.className = 'stat-badge badge-success';
+            if (processButton) processButton.disabled = true;
+        } else if (data.rfp_uploaded && data.vendors_count > 0) {
+            processStatus.textContent = 'Ready to Process';
+            processBadge.textContent = 'Ready';
+            processBadge.className = 'stat-badge badge-warning';
+            if (processButton) processButton.disabled = false;
         } else {
             processStatus.textContent = 'Not Started';
             processBadge.textContent = 'Waiting';
             processBadge.className = 'stat-badge badge-pending';
+            if (processButton) processButton.disabled = true;
         }
-    }
-    
-    // Enable/disable process button
-    if (processButton) {
-        processButton.disabled = !data.rfp_uploaded || data.vendors_count === 0 || data.processed;
     }
     
     // Update chatbot status
     const chatbotStatus = document.getElementById('chatbotStatus');
     const chatbotStatusBadge = document.getElementById('chatbotStatusBadge');
     const chatbotLink = document.getElementById('chatbotLink');
-    const chatbotBadge = document.getElementById('chatbotBadge');
+    const chatbotAction = document.getElementById('chatbotAction');
     
     if (chatbotStatus && chatbotStatusBadge) {
         if (data.chatbot_ready) {
             chatbotStatus.textContent = 'Ready';
             chatbotStatusBadge.textContent = 'Active';
             chatbotStatusBadge.className = 'stat-badge badge-success';
-            
-            if (chatbotLink) {
-                chatbotLink.style.pointerEvents = 'auto';
-                chatbotLink.style.opacity = '1';
-            }
-            if (chatbotBadge) {
-                chatbotBadge.style.display = 'block';
-            }
+            if (chatbotLink) chatbotLink.style.pointerEvents = 'auto';
+            if (chatbotAction) chatbotAction.style.opacity = '1';
         } else {
             chatbotStatus.textContent = 'Not Ready';
             chatbotStatusBadge.textContent = 'Disabled';
             chatbotStatusBadge.className = 'stat-badge badge-disabled';
-            
-            if (chatbotLink) {
-                chatbotLink.style.pointerEvents = 'none';
-                chatbotLink.style.opacity = '0.5';
-            }
-            if (chatbotBadge) {
-                chatbotBadge.style.display = 'none';
-            }
+            if (chatbotLink) chatbotLink.style.pointerEvents = 'none';
+            if (chatbotAction) chatbotAction.style.opacity = '0.5';
         }
     }
 }
@@ -315,10 +306,12 @@ async function processDocuments() {
         return;
     }
     
+    // Show loading
     setButtonLoading(processButton, true);
     if (processLog) processLog.style.display = 'block';
-    
-    addLogMessage(logContainer, 'Starting document processing...');
+    if (logContainer) {
+        logContainer.innerHTML = '<p>⏳ Starting document processing...</p>';
+    }
     
     try {
         const response = await fetch('/api/process-documents', {
@@ -331,121 +324,119 @@ async function processDocuments() {
         const data = await response.json();
         
         if (data.success) {
-            addLogMessage(logContainer, '✅ Processing complete!');
-            
-            if (data.non_compliant_vendors && data.non_compliant_vendors.length > 0) {
-                addLogMessage(logContainer, `⚠️ ${data.non_compliant_vendors.length} vendor(s) disqualified for non-compliance`);
+            if (logContainer) {
+                logContainer.innerHTML += '<p>✅ Processing completed successfully!</p>';
+                if (data.non_compliant_vendors && data.non_compliant_vendors.length > 0) {
+                    logContainer.innerHTML += `<p>⚠️ Non-compliant vendors: ${data.non_compliant_vendors.join(', ')}</p>`;
+                }
             }
             
+            // Reload status
+            await loadStatus();
+            
             setTimeout(() => {
-                loadStatus();
-                window.location.reload();
-            }, 2000);
+                alert('Processing complete! You can now use the chatbot.');
+            }, 500);
         } else {
-            addLogMessage(logContainer, `❌ Error: ${data.message}`);
+            if (logContainer) {
+                logContainer.innerHTML += `<p>❌ Error: ${data.message}</p>`;
+            }
+            alert('Processing failed: ' + data.message);
         }
     } catch (error) {
-        addLogMessage(logContainer, `❌ Network error: ${error.message}`);
-        console.error('Process error:', error);
+        if (logContainer) {
+            logContainer.innerHTML += `<p>❌ Network error: ${error.message}</p>`;
+        }
+        alert('Network error. Please try again.');
+        console.error('Processing error:', error);
     } finally {
         setButtonLoading(processButton, false);
     }
 }
 
-function addLogMessage(container, message) {
-    if (!container) return;
-    
-    const logEntry = document.createElement('div');
-    logEntry.className = 'log-entry';
-    logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-    container.appendChild(logEntry);
-    container.scrollTop = container.scrollHeight;
-}
-
 // ============================================
-// File Upload Functions
+// Upload RFP Functions
 // ============================================
 function initUploadRFP() {
     const rfpForm = document.getElementById('rfpUploadForm');
     const rfpFile = document.getElementById('rfpFile');
-    const uploadButton = document.getElementById('uploadButton');
-    
-    if (rfpFile) {
-        rfpFile.addEventListener('change', function(e) {
-            handleFileSelect(e, 'rfpFile', 'selectedFile', 'fileName', 'fileSize', 'uploadButton');
-        });
-    }
     
     if (rfpForm) {
         rfpForm.addEventListener('submit', handleRFPUpload);
     }
-}
-
-function initUploadVendor() {
-    const vendorForm = document.getElementById('vendorUploadForm');
-    const vendorFile = document.getElementById('vendorFile');
-    const vendorName = document.getElementById('vendorName');
-    const uploadButton = document.getElementById('uploadButton');
     
-    if (vendorFile) {
-        vendorFile.addEventListener('change', function(e) {
-            handleFileSelect(e, 'vendorFile', 'selectedFile', 'fileName', 'fileSize', 'uploadButton');
-        });
-    }
-    
-    if (vendorName) {
-        vendorName.addEventListener('input', function() {
-            checkVendorFormValidity();
-        });
-    }
-    
-    if (vendorForm) {
-        vendorForm.addEventListener('submit', handleVendorUpload);
+    if (rfpFile) {
+        rfpFile.addEventListener('change', handleRFPFileSelect);
     }
 }
 
-function handleFileSelect(e, fileInputId, selectedFileId, fileNameId, fileSizeId, buttonId) {
+function handleRFPFileSelect(e) {
     const file = e.target.files[0];
-    const selectedFileDiv = document.getElementById(selectedFileId);
-    const fileNameSpan = document.getElementById(fileNameId);
-    const fileSizeSpan = document.getElementById(fileSizeId);
-    const uploadButton = document.getElementById(buttonId);
+    const selectedFile = document.getElementById('selectedFile');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const uploadButton = document.getElementById('uploadButton');
     
     if (file) {
-        // Validate file type
-        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        if (!allowedTypes.includes(file.type)) {
-            alert('Please select a PDF, DOC, or DOCX file');
-            e.target.value = '';
-            return;
-        }
-        
-        // Validate file size (10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            alert('File size must be less than 10 MB');
-            e.target.value = '';
-            return;
-        }
-        
-        if (selectedFileDiv) selectedFileDiv.style.display = 'block';
-        if (fileNameSpan) fileNameSpan.textContent = file.name;
-        if (fileSizeSpan) fileSizeSpan.textContent = formatFileSize(file.size);
+        if (selectedFile) selectedFile.style.display = 'block';
+        if (fileName) fileName.textContent = file.name;
+        if (fileSize) fileSize.textContent = formatFileSize(file.size);
         if (uploadButton) uploadButton.disabled = false;
-        
-        // For vendor form, also check vendor name
-        if (fileInputId === 'vendorFile') {
-            checkVendorFormValidity();
-        }
     }
 }
 
-function checkVendorFormValidity() {
-    const vendorName = document.getElementById('vendorName');
-    const vendorFile = document.getElementById('vendorFile');
-    const uploadButton = document.getElementById('uploadButton');
+async function handleRFPUpload(e) {
+    e.preventDefault();
     
-    if (uploadButton) {
-        uploadButton.disabled = !vendorName.value.trim() || !vendorFile.files[0];
+    const fileInput = document.getElementById('rfpFile');
+    const uploadButton = document.getElementById('uploadButton');
+    const uploadMessage = document.getElementById('uploadMessage');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    
+    if (!fileInput.files[0]) {
+        showMessage(uploadMessage, 'Please select a file', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    // Show loading
+    setButtonLoading(uploadButton, true);
+    if (uploadProgress) uploadProgress.style.display = 'block';
+    hideMessage(uploadMessage);
+    
+    try {
+        const response = await fetch('/api/upload-rfp', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage(uploadMessage, '✅ ' + data.message, 'success');
+            if (progressFill) progressFill.style.width = '100%';
+            if (progressText) progressText.textContent = 'Upload complete!';
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1500);
+        } else {
+            showMessage(uploadMessage, '❌ ' + data.message, 'error');
+        }
+    } catch (error) {
+        showMessage(uploadMessage, '❌ Network error. Please try again.', 'error');
+        console.error('Upload error:', error);
+    } finally {
+        setButtonLoading(uploadButton, false);
+        if (uploadProgress) {
+            setTimeout(() => {
+                uploadProgress.style.display = 'none';
+            }, 2000);
+        }
     }
 }
 
@@ -459,91 +450,69 @@ function clearFile() {
     if (uploadButton) uploadButton.disabled = true;
 }
 
-function clearVendorFile() {
+// ============================================
+// Upload Vendor Functions
+// ============================================
+function initUploadVendor() {
+    const vendorForm = document.getElementById('vendorUploadForm');
     const vendorFile = document.getElementById('vendorFile');
-    const selectedFile = document.getElementById('selectedFile');
     
-    if (vendorFile) vendorFile.value = '';
-    if (selectedFile) selectedFile.style.display = 'none';
-    checkVendorFormValidity();
+    if (vendorForm) {
+        vendorForm.addEventListener('submit', handleVendorUpload);
+    }
+    
+    if (vendorFile) {
+        vendorFile.addEventListener('change', handleVendorFileSelect);
+    }
 }
 
-async function handleRFPUpload(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
+function handleVendorFileSelect(e) {
+    const file = e.target.files[0];
+    const vendorName = document.getElementById('vendorName');
+    const selectedFile = document.getElementById('selectedFile');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
     const uploadButton = document.getElementById('uploadButton');
-    const uploadMessage = document.getElementById('uploadMessage');
-    const uploadProgress = document.getElementById('uploadProgress');
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
     
-    setButtonLoading(uploadButton, true);
-    if (uploadProgress) uploadProgress.style.display = 'block';
-    hideMessage(uploadMessage);
-    
-    // Simulate progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += 10;
-        if (progress <= 90 && progressFill) {
-            progressFill.style.width = progress + '%';
+    if (file) {
+        if (selectedFile) selectedFile.style.display = 'block';
+        if (fileName) fileName.textContent = file.name;
+        if (fileSize) fileSize.textContent = formatFileSize(file.size);
+        if (uploadButton && vendorName && vendorName.value.trim()) {
+            uploadButton.disabled = false;
         }
-    }, 200);
-    
-    try {
-        const response = await fetch('/api/upload-rfp', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        clearInterval(progressInterval);
-        if (progressFill) progressFill.style.width = '100%';
-        
-        if (data.success) {
-            showMessage(uploadMessage, `✅ ${data.message}`, 'success');
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
-        } else {
-            showMessage(uploadMessage, `❌ ${data.message}`, 'error');
-        }
-    } catch (error) {
-        clearInterval(progressInterval);
-        showMessage(uploadMessage, '❌ Upload failed. Please try again.', 'error');
-        console.error('Upload error:', error);
-    } finally {
-        setButtonLoading(uploadButton, false);
-        setTimeout(() => {
-            if (uploadProgress) uploadProgress.style.display = 'none';
-            if (progressFill) progressFill.style.width = '0%';
-        }, 2000);
     }
 }
 
 async function handleVendorUpload(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
+    const fileInput = document.getElementById('vendorFile');
+    const vendorName = document.getElementById('vendorName');
     const uploadButton = document.getElementById('uploadButton');
     const uploadMessage = document.getElementById('uploadMessage');
     const uploadProgress = document.getElementById('uploadProgress');
     const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
     
+    if (!fileInput.files[0]) {
+        showMessage(uploadMessage, 'Please select a file', 'error');
+        return;
+    }
+    
+    if (!vendorName.value.trim()) {
+        showMessage(uploadMessage, 'Please enter vendor name', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('vendor_name', vendorName.value.trim());
+    
+    // Show loading
     setButtonLoading(uploadButton, true);
     if (uploadProgress) uploadProgress.style.display = 'block';
     hideMessage(uploadMessage);
-    
-    // Simulate progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += 10;
-        if (progress <= 90 && progressFill) {
-            progressFill.style.width = progress + '%';
-        }
-    }, 200);
     
     try {
         const response = await fetch('/api/upload-vendor', {
@@ -553,32 +522,37 @@ async function handleVendorUpload(e) {
         
         const data = await response.json();
         
-        clearInterval(progressInterval);
-        if (progressFill) progressFill.style.width = '100%';
-        
         if (data.success) {
-            showMessage(uploadMessage, `✅ ${data.message}`, 'success');
+            showMessage(uploadMessage, '✅ ' + data.message, 'success');
+            if (progressFill) progressFill.style.width = '100%';
+            if (progressText) progressText.textContent = 'Upload complete!';
             
-            // Reset form for next vendor
+            // Reset form
             setTimeout(() => {
-                e.target.reset();
+                vendorName.value = '';
                 clearVendorFile();
                 hideMessage(uploadMessage);
+                if (uploadProgress) uploadProgress.style.display = 'none';
             }, 2000);
         } else {
-            showMessage(uploadMessage, `❌ ${data.message}`, 'error');
+            showMessage(uploadMessage, '❌ ' + data.message, 'error');
         }
     } catch (error) {
-        clearInterval(progressInterval);
-        showMessage(uploadMessage, '❌ Upload failed. Please try again.', 'error');
+        showMessage(uploadMessage, '❌ Network error. Please try again.', 'error');
         console.error('Upload error:', error);
     } finally {
         setButtonLoading(uploadButton, false);
-        setTimeout(() => {
-            if (uploadProgress) uploadProgress.style.display = 'none';
-            if (progressFill) progressFill.style.width = '0%';
-        }, 2000);
     }
+}
+
+function clearVendorFile() {
+    const vendorFile = document.getElementById('vendorFile');
+    const selectedFile = document.getElementById('selectedFile');
+    const uploadButton = document.getElementById('uploadButton');
+    
+    if (vendorFile) vendorFile.value = '';
+    if (selectedFile) selectedFile.style.display = 'none';
+    if (uploadButton) uploadButton.disabled = true;
 }
 
 // ============================================
@@ -614,12 +588,10 @@ async function handleChatSubmit(e) {
     // Add user message
     addMessage('user', query);
     chatInput.value = '';
-    autoResize.call(chatInput);
     
-    setButtonLoading(sendButton, true);
-    
-    // Add thinking indicator
-    const thinkingId = addMessage('bot', '💭 Thinking...');
+    // Show loading
+    const loadingId = addMessage('bot', '💭 Thinking...');
+    sendButton.disabled = true;
     
     try {
         const response = await fetch('/api/chat', {
@@ -632,25 +604,24 @@ async function handleChatSubmit(e) {
         
         const data = await response.json();
         
-        // Remove thinking indicator
-        removeMessage(thinkingId);
+        // Remove loading message
+        removeMessage(loadingId);
         
         if (data.success) {
             addMessage('bot', data.answer);
-            
-            // Show sources if available
             if (data.sources && data.sources.length > 0) {
                 addSources(data.sources);
             }
         } else {
-            addMessage('bot', `❌ Error: ${data.message}`);
+            addMessage('bot', '❌ Error: ' + data.message);
         }
     } catch (error) {
-        removeMessage(thinkingId);
+        removeMessage(loadingId);
         addMessage('bot', '❌ Network error. Please try again.');
         console.error('Chat error:', error);
     } finally {
-        setButtonLoading(sendButton, false);
+        sendButton.disabled = false;
+        chatInput.focus();
     }
 }
 
@@ -658,14 +629,15 @@ function addMessage(role, content) {
     const chatMessages = document.getElementById('chatMessages');
     const chatWelcome = document.querySelector('.chat-welcome');
     
-    if (chatWelcome && chatMessages.children.length === 0) {
+    // Hide welcome message on first user message
+    if (chatWelcome && role === 'user') {
         chatWelcome.style.display = 'none';
     }
     
     const messageId = 'msg-' + Date.now();
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${role}-message`;
     messageDiv.id = messageId;
+    messageDiv.className = `message ${role}-message`;
     
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';

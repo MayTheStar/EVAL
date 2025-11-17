@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Files Uploaded - EVAL</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="dashboard-page">
     <div class="dashboard-container">
@@ -15,27 +15,27 @@
                 <p>Proposal Analysis</p>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">
+                <a href="/dashboard" class="nav-item">
                     <span class="nav-icon">📊</span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="upload_rfp.html" class="nav-item">
+                <a href="/upload-rfp" class="nav-item">
                     <span class="nav-icon">📄</span>
                     <span class="nav-text">Upload RFP</span>
                 </a>
-                <a href="upload_vendor.html" class="nav-item">
+                <a href="/upload-vendor" class="nav-item">
                     <span class="nav-icon">📦</span>
                     <span class="nav-text">Upload Vendor</span>
                 </a>
-                <a href="chatbot.html" class="nav-item" id="chatbotLink">
+                <a href="/chatbot" class="nav-item" id="chatbotLink">
                     <span class="nav-icon">💬</span>
                     <span class="nav-text">Chatbot</span>
                 </a>
-                <a href="files_uploaded.html" class="nav-item active">
+                <a href="/files" class="nav-item active">
                     <span class="nav-icon">📁</span>
                     <span class="nav-text">Files Uploaded</span>
                 </a>
-                <a href="profile.html" class="nav-item">
+                <a href="/profile" class="nav-item">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Profile</span>
                 </a>
@@ -144,8 +144,8 @@
                 <h2>No Files Uploaded Yet</h2>
                 <p>Start by uploading your RFP document and vendor responses</p>
                 <div class="empty-actions">
-                    <a href="upload_rfp.html" class="btn-primary">Upload RFP</a>
-                    <a href="upload_vendor.html" class="btn-secondary">Upload Vendor</a>
+                    <a href="/upload-rfp" class="btn-primary">Upload RFP</a>
+                    <a href="/upload-vendor" class="btn-secondary">Upload Vendor</a>
                 </div>
             </div>
         </main>
@@ -163,6 +163,6 @@
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

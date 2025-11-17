@@ -104,8 +104,15 @@ def get_output_folder(user_id):
 # ---------------- Routes ----------------
 @app.route("/")
 def landing():
-    return render_template("index.html")  # <-- New UI
+    return render_template("index.html")
 
+@app.route("/login")
+def login_page():
+    return render_template("login.html")
+
+@app.route("/register")
+def register_page():
+    return render_template("register.html")
 
 @app.route("/api/login", methods=["POST"])
 def api_login():
@@ -194,7 +201,7 @@ def dashboard():
             v["compliance"] = "⏳ Pending"
 
     return render_template(
-        "dashboard.html",  # <-- New UI
+        "dashboard.html",
         user_id=user_id,
         username=username,
         vendors=user_data[user_id].get("vendor_files", []),

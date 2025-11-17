@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EVAL</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/main.js"></script>
 </head>
 <body class="auth-page">
     <div class="auth-container">
@@ -42,12 +42,12 @@
             </form>
 
             <div class="auth-footer">
-                <p>Don't have an account? <a href="register.html">Sign up</a></p>
-                <p><a href="index.html" class="link-secondary">← Back to Home</a></p>
+                <p>Don't have an account? <a href="/register">Sign up</a></p>
+                <p><a href="/" class="link-secondary">← Back to Home</a></p>
             </div>
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

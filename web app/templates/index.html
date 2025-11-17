@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EVAL - RFP Analysis Platform</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/main.js"></script>
  </head>
 <body class="landing-page">
     <div class="landing-container">
@@ -15,8 +15,8 @@
                 <p class="subtitle">Proposal Analysis</p>
             </div>
             <nav class="landing-nav">
-                <a href="login.html" class="btn-secondary">Login</a>
-                <a href="register.html" class="btn-primary">Sign Up</a>
+                <a href="/login" class="btn-secondary">Login</a>
+                <a href="/register" class="btn-primary">Sign Up</a>
             </nav>
         </header>
 
@@ -29,7 +29,7 @@
                         Get instant scores, compatibility insights, and smart<br>
                         recommendations all in one dashboard.
                     </p>
-                    <a href="register.html" class="btn-cta">Try EVAL Now</a>
+                    <a href="/register" class="btn-cta">Try EVAL Now</a>
                 </div>
                 <div class="hero-visual">
                     <div class="floating-card card-1">
@@ -82,6 +82,6 @@
         </footer>
     </div>
 
-    <script src="main.js"></script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

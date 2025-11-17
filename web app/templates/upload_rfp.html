@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload RFP - EVAL</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/main.js"></script>
 </head>
 <body class="dashboard-page">
     <div class="dashboard-container">
@@ -16,27 +16,27 @@
                 <p>Proposal Analysis</p>
             </div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html" class="nav-item">
+                <a href="/dashboard" class="nav-item">
                     <span class="nav-icon">📊</span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="upload_rfp.html" class="nav-item active">
+                <a href="/upload-rfp" class="nav-item active">
                     <span class="nav-icon">📄</span>
                     <span class="nav-text">Upload RFP</span>
                 </a>
-                <a href="upload_vendor.html" class="nav-item">
+                <a href="/upload-vendor" class="nav-item">
                     <span class="nav-icon">📦</span>
                     <span class="nav-text">Upload Vendor</span>
                 </a>
-                <a href="chatbot.html" class="nav-item" id="chatbotLink">
+                <a href="/chatbot" class="nav-item" id="chatbotLink">
                     <span class="nav-icon">💬</span>
                     <span class="nav-text">Chatbot</span>
                 </a>
-                <a href="files_uploaded.html" class="nav-item">
+                <a href="/files" class="nav-item">
                     <span class="nav-icon">📁</span>
                     <span class="nav-text">Files Uploaded</span>
                 </a>
-                <a href="profile.html" class="nav-item">
+                <a href="/profile" class="nav-item">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Profile</span>
                 </a>
@@ -140,6 +140,6 @@
         </main>
     </div>
 
-    <script src="main.js"></script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

@@ -23,14 +23,16 @@ except Exception as _db_err:
     RFPDocument = VendorDocument = DocumentChunk = None
     DB_AVAILABLE = False
 
-
+# Import pipeline modules (keep module names as you use them)
 from parser import process_document
 from vendor_parser import process_vendor_response, process_multiple_vendors
 from extractor import analyze_document_chunks, analyze_rfp_and_vendors
 from embeder import create_embeddings_from_rfp_and_vendors
 from chatbot import create_chatbot
+from vendor_capability_extractor import VendorCapabilityExtractor
 import compliance_checker
 from Scorer import VendorScorer
+
 
 class RFPAnalysisSystem:
     """Main system orchestrator for RFP analysis pipeline."""
@@ -72,7 +74,6 @@ class RFPAnalysisSystem:
         # ⭐ DB-related IDs (optional)
         self.project_id = project_id
         self.rfp_id = rfp_id
-        
         self.vendor_doc_ids = vendor_doc_ids or {}
         
         # Output paths
@@ -100,7 +101,7 @@ class RFPAnalysisSystem:
             rfp_file: Path to RFP document
             
         Returns:
-            Dictionary with output file paths
+            Dictionary with output file paths and chunks
         """
         print("=" * 60)
         print("📋 STEP 1: Processing RFP Document")
@@ -123,7 +124,7 @@ class RFPAnalysisSystem:
         
         print(f"\n✅ RFP processing complete: {len(chunks)} chunks created")
 
-        # ⭐ DB integration: Save RFP chunks if DB and RFPDocument exist
+        # ⭐ DB integration: Save RFP chunks if DB and DocumentChunk exist
         if DB_AVAILABLE and DocumentChunk is not None:
             try:
                 db = SessionLocal()
@@ -135,7 +136,7 @@ class RFPAnalysisSystem:
                         RFPDocument.filepath == str(Path(rfp_file))
                     ).first()
                     if rfp_record:
-                        rfp_doc_id = rfp_record.rfp_id
+                        rfp_doc_id = getattr(rfp_record, "rfp_id", None)
 
                 if rfp_doc_id is not None:
                     for idx, chunk in enumerate(chunks):
@@ -174,7 +175,7 @@ class RFPAnalysisSystem:
             vendor_files: List of tuples (file_path, vendor_name)
             
         Returns:
-            Dictionary mapping vendor names to their output paths
+            Dictionary mapping vendor names to their output paths and chunks
         """
         print("\n" + "=" * 60)
         print("📦 STEP 2: Processing Vendor Responses")
@@ -198,7 +199,7 @@ class RFPAnalysisSystem:
                 "chunks": chunks
             }
 
-            # ⭐ DB integration: Save vendor chunks if DB and VendorDocument exist
+            # ⭐ DB integration: Save vendor chunks if DB and DocumentChunk exist
             if DB_AVAILABLE and DocumentChunk is not None:
                 try:
                     db = SessionLocal()
@@ -210,7 +211,7 @@ class RFPAnalysisSystem:
                             VendorDocument.filepath == str(Path(vendor_file))
                         ).first()
                         if v_record:
-                            vendor_doc_id = v_record.vendor_doc_id
+                            vendor_doc_id = getattr(v_record, "vendor_doc_id", None)
 
                     if vendor_doc_id is not None:
                         for idx, chunk in enumerate(chunks):
@@ -263,23 +264,32 @@ class RFPAnalysisSystem:
         
         print(f"\n✅ Extraction complete: RFP + {len(results.get('vendors', {}))} vendors analyzed")
         
-        
         return results
-    def score_vendors(self, rfp_analysis_file: str, vendor_analysis_files: Dict[str, str], vendor_chunks_files: Dict[str, str], output_dir: str):
-  
-       print("\n🎯 STEP 4: Scoring Vendors")
-       scorer = VendorScorer(api_key=self.api_key)
- 
-       results = scorer.score_all_vendors(
-           rfp_analysis_file=rfp_analysis_file,
-           vendor_analysis_files=vendor_analysis_files,
-           rfp_chunks_file=str(self.chunks_dir / "rfp_chunks.json"),  # full text chunks
-           vendor_chunks_files=vendor_chunks_files,
-           output_dir=output_dir
-    )
 
-       return results
+    def score_vendors(self,
+                      rfp_analysis_file: str,
+                      vendor_analysis_files: Dict[str, str],
+                      vendor_chunks_files: Dict[str, str],
+                      output_dir: str) -> Dict:
+        """
+        Score vendors using VendorScorer.
+        """
+        print("\n" + "=" * 60)
+        print("🎯 STEP 4: Scoring Vendors")
+        print("=" * 60)
 
+        scorer = VendorScorer(api_key=self.api_key)
+
+        results = scorer.score_all_vendors(
+            rfp_analysis_file=rfp_analysis_file,
+            vendor_analysis_files=vendor_analysis_files,
+            rfp_chunks_file=str(self.chunks_dir / "rfp_chunks.json"),
+            vendor_chunks_files=vendor_chunks_files,
+            output_dir=output_dir
+        )
+
+        print("✅ Vendor scoring complete")
+        return results
     
     def create_embeddings(self, rfp_json: str, vendor_jsons: List[str]) -> tuple:
         """
@@ -293,7 +303,7 @@ class RFPAnalysisSystem:
             Tuple of (faiss_index_path, metadata_path)
         """
         print("\n" + "=" * 60)
-        print("✨ STEP 4: Creating Embeddings & FAISS Index")
+        print("✨ STEP 5: Creating Embeddings & FAISS Index")
         print("=" * 60)
         
         vector_db_file = "chunks_faiss.index"
@@ -315,7 +325,6 @@ class RFPAnalysisSystem:
         print(f"   📊 FAISS index: {faiss_path}")
         print(f"   📋 Metadata: {metadata_path}")
         
-        
         return str(faiss_path), str(metadata_path)
     
     def prepare_chatbot(self, vector_db_path: str, metadata_path: str):
@@ -330,7 +339,7 @@ class RFPAnalysisSystem:
             RFPChatbot instance
         """
         print("\n" + "=" * 60)
-        print("🤖 STEP 5: Preparing Chatbot")
+        print("🤖 STEP 6: Preparing Chatbot")
         print("=" * 60)
         
         chatbot = create_chatbot(
@@ -344,10 +353,10 @@ class RFPAnalysisSystem:
         return chatbot
     
     def run_full_pipeline(self, 
-                        rfp_file: str, 
-                        vendor_files: List[tuple],
-                        skip_extraction: bool = False,
-                        run_chatbot: bool = True) -> Dict:
+                          rfp_file: str, 
+                          vendor_files: List[tuple],
+                          skip_extraction: bool = False,
+                          run_chatbot: bool = True) -> Dict:
         """
         Run the complete pipeline from start to finish with VendorScorer integrated.
         
@@ -387,7 +396,6 @@ class RFPAnalysisSystem:
             results["extraction"] = extraction_results
         else:
             print("\n⏭️  Skipping extraction step")
-
         
         # Step 3.5: Analyze Vendor Capabilities
         print("\n🧠 STEP 3.5: Extracting Vendor Capabilities & Differentiators")
@@ -395,7 +403,6 @@ class RFPAnalysisSystem:
         extractor.analyze_folder(str(self.chunks_dir))
         
         # Step 4: Score Vendors using VendorScorer
-        print("\n🎯 STEP 4: Scoring Vendors")
         vendor_chunks_files = {name: v["json"] for name, v in vendor_results.items()}
         
         # Collect vendor analysis files
@@ -404,7 +411,6 @@ class RFPAnalysisSystem:
             name = file.stem.replace("_analysis", "")
             if name.lower() != "rfp_chunk":
                 vendor_analysis_files[name] = str(file)
-
         
         scorer_results = self.score_vendors(
             rfp_analysis_file=str(self.analysis_dir / "rfp_chunk_analysis.json"),
@@ -415,7 +421,6 @@ class RFPAnalysisSystem:
         results["scoring"] = scorer_results
         
         # Step 5: Create Embeddings (all vendors included; you can filter top vendors if needed)
-
         faiss_path, metadata_path = self.create_embeddings(
             rfp_results["json"],
             [v["json"] for v in vendor_results.values()]
@@ -439,10 +444,13 @@ class RFPAnalysisSystem:
         
         # Run interactive chatbot if requested
         if run_chatbot:
-            print("🤖 Launching interactive chatbot...")
-            print("   Type your questions or 'exit' to quit")
-            print()
-            chatbot.run_interactive()
+            try:
+                print("🤖 Launching interactive chatbot...")
+                print("   Type your questions or 'exit' to quit")
+                print()
+                chatbot.run_interactive()
+            except Exception as e:
+                print(f"⚠️ Chatbot interactive failed: {e}")
         
         return results
 
@@ -502,6 +510,21 @@ def main():
         "--api-key",
         help="OpenAI API key (or set OPENAI_API_KEY environment variable)"
     )
+
+    # Optional DB-related args
+    parser.add_argument(
+        "--project-id",
+        help="Optional project UUID (for DB integration)"
+    )
+    parser.add_argument(
+        "--rfp-id",
+        help="Optional rfp document UUID (for DB integration)"
+    )
+    parser.add_argument(
+        "--vendor-doc-ids",
+        nargs="*",
+        help="Optional vendor doc ids in the form vendor_name:vendor_doc_id"
+    )
     
     args = parser.parse_args()
     
@@ -516,13 +539,23 @@ def main():
                 name = Path(vendor_spec).stem
             vendor_files.append((path, name))
     
+    # Parse vendor_doc_ids mapping if provided
+    vendor_doc_ids = {}
+    if args.vendor_doc_ids:
+        for v in args.vendor_doc_ids:
+            if ":" in v:
+                name, vid = v.split(":", 1)
+                vendor_doc_ids[name] = vid
+
     # Initialize RFP Analysis System
     system = RFPAnalysisSystem(
         output_dir=args.output,
         openai_api_key=args.api_key,
         min_tokens=args.min_tokens,
-        max_tokens=args.max_tokens
-        # project_id, rfp_id, vendor_doc_ids can be passed here later if needed
+        max_tokens=args.max_tokens,
+        project_id=args.project_id,
+        rfp_id=args.rfp_id,
+        vendor_doc_ids=vendor_doc_ids
     )
     
     # Run full pipeline
@@ -568,8 +601,6 @@ def main():
         print("\n⚠️ No scoring results available.")
     
     return results
-
-
 
 
 if __name__ == "__main__":
