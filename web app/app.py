@@ -43,9 +43,12 @@ print("ROOT_DIR:", ROOT_DIR)
 print("AI_ENGINE_DIR:", AI_ENGINE_DIR)
 print("BACKEND_CORE_DIR:", BACKEND_CORE_DIR)
 print("--------------------------------")
+
+
 # ---------------- Import database and models ----------------
 from database import SessionLocal, Base, engine
 from core_models import User, Project, RFPDocument, VendorDocument, VendorEvaluation
+
 # ---------------- Import AI modules ----------------
 try:
     from ai_engine.main import RFPAnalysisSystem
@@ -485,6 +488,7 @@ def get_status():
         "files_count": len(data.get("files", []))
     })
 
+
 @app.route("/api/delete-file", methods=["POST"])
 def delete_file():
     user_id = get_user_id()
@@ -499,94 +503,79 @@ def delete_file():
         return jsonify({"success": True, "message": "File deleted successfully"})
     except Exception as e:
         return jsonify({"success": False, "message": f"Error: {e}"}), 500
+# ============================================
+# UPDATED: /api/get-scores endpoint
+# Replace the existing get-scores endpoint in app.py with this
+# ============================================
 
-# ---------------- Vendor Scoring API ----------------
-@app.route("/api/get-vendor-scores")
-def get_vendor_scores():
-    """Get vendor scoring results for display in dashboard."""
+@app.route("/api/get-scores")
+def get_scores():
+    """Get vendor scoring results from the output folder."""
     user_id = get_user_id()
+    output_folder = get_output_folder(user_id)
     
-    if user_id not in user_data:
-        return jsonify({"success": False, "message": "No user data found", "scores": []})
+    # Try multiple possible locations for scoring results
+    possible_paths = [
+        output_folder / "scoring_results" / "scoring_summary.json",
+        output_folder / "final_scores.json",
+        output_folder / "scoring_summary.json"
+    ]
     
-    if not user_data[user_id].get("processed", False):
-        return jsonify({"success": False, "message": "Documents not processed yet", "scores": []})
+    print(f"[DEBUG] Looking for scores in: {output_folder}")
     
     try:
-        output_folder = get_output_folder(user_id)
+        for scores_file in possible_paths:
+            print(f"[DEBUG] Checking: {scores_file}")
+            if scores_file.exists():
+                print(f"[DEBUG] Found scores at: {scores_file}")
+                with open(scores_file, 'r') as f:
+                    scores = json.load(f)
+                print(f"[DEBUG] Loaded scores with {len(scores.get('vendors', {}))} vendors")
+                return jsonify({"success": True, "scores": scores})
         
-        # Try to find scoring_summary.json in scoring_results directory
-        scoring_file = output_folder / "scoring_results" / "scoring_summary.json"
+        # No scores file found - list what files exist
+        print(f"[DEBUG] No scores file found. Checking directory structure:")
+        if output_folder.exists():
+            print(f"[DEBUG] Output folder contents: {list(output_folder.iterdir())}")
+            scoring_dir = output_folder / "scoring_results"
+            if scoring_dir.exists():
+                print(f"[DEBUG] Scoring results folder contents: {list(scoring_dir.iterdir())}")
         
-        if not scoring_file.exists():
-            # Try alternate location
-            scoring_file = output_folder / "scoring" / "scoring_summary.json"
-        
-        if not scoring_file.exists():
-            return jsonify({"success": False, "message": "No scoring results found", "scores": []})
-        
-        # Load scoring data
-        with open(scoring_file, 'r', encoding='utf-8') as f:
-            scoring_data = json.load(f)
-        
-        # Load compliance data
-        compliance_results = load_compliance_results(str(COMPLIANCE_DIR))
-        
-        # Extract vendor scores from the nested structure
-        vendors_data = scoring_data.get("vendors", {})
-        
-        # Format scores for frontend
-        vendor_scores = []
-        for vendor_name, score_data in vendors_data.items():
-            # Determine compliance status
-            compliance_status = "compliant"
-            if vendor_name in compliance_results:
-                compliance_status = "compliant" if compliance_results[vendor_name].get("compliant", False) else "non-compliant"
-            
-            # Calculate max score (sum of all category scores if available)
-            max_score = 100.0
-            
-            vendor_score = {
-                "vendor_name": vendor_name,
-                "total_score": score_data.get("total_score", 0),
-                "max_score": max_score,
-                "technical_score": score_data.get("technical_score", 0),
-                "financial_score": score_data.get("financial_score", 0),
-                "experience_score": score_data.get("experience_score", 0),
-                "compliance_score": score_data.get("mandatory_compliance_score", 0),
-                "methodology_score": score_data.get("methodology_score", 0),
-                "innovation_score": score_data.get("innovation_score", 0),
-                "confidence": score_data.get("confidence_score", 0),
-                "compliance_status": compliance_status,
-                "strengths": score_data.get("strengths", [])[:3],  # Limit to top 3
-                "weaknesses": score_data.get("weaknesses", [])[:3],  # Limit to top 3
-                "is_compliant": score_data.get("is_compliant", True),
-                "disqualification_reason": score_data.get("disqualification_reason"),
-                "met_requirements": score_data.get("met_requirements", 0),
-                "total_requirements": score_data.get("total_requirements", 0)
-            }
-            vendor_scores.append(vendor_score)
-        
-        # Sort by total score descending
-        vendor_scores.sort(key=lambda x: x["total_score"], reverse=True)
-        
-        return jsonify({
-            "success": True,
-            "scores": vendor_scores,
-            "count": len(vendor_scores),
-            "metadata": scoring_data.get("evaluation_metadata", {})
-        })
-        
+        return jsonify({"success": False, "message": "No scores available yet"})
     except Exception as e:
-        print(f"Error loading vendor scores: {e}")
+        print(f"[ERROR] Error loading scores: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({
-            "success": False,
-            "message": f"Error loading scores: {str(e)}",
-            "scores": []
-        })
+        return jsonify({"success": False, "message": f"Error loading scores: {str(e)}"})
 
+
+# ============================================
+# ALTERNATIVE: Add endpoint to check files
+# Add this endpoint to help debug
+# ============================================
+
+@app.route("/api/debug-files")
+def debug_files():
+    """Debug endpoint to check what files exist."""
+    user_id = get_user_id()
+    output_folder = get_output_folder(user_id)
+    
+    files_info = {
+        "output_folder": str(output_folder),
+        "exists": output_folder.exists(),
+        "contents": []
+    }
+    
+    if output_folder.exists():
+        for item in output_folder.rglob("*"):
+            if item.is_file():
+                files_info["contents"].append({
+                    "path": str(item.relative_to(output_folder)),
+                    "size": item.stat().st_size,
+                    "name": item.name
+                })
+    
+    return jsonify(files_info)
 # ---------------- Run ----------------
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8000)

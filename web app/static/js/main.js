@@ -1035,3 +1035,270 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(loadVendorScores, 1000);
     }
 });
+
+// ============================================
+// UPDATED: Dashboard UI Update Function
+// ============================================
+
+function updateDashboardUI(data) {
+    // Update process button state based on uploaded files
+    const processButton = document.getElementById('processButton');
+    
+    if (processButton) {
+        if (data.processed) {
+            // Already processed - disable button
+            processButton.disabled = true;
+            processButton.querySelector('.button-text').textContent = '✓ Processing Complete';
+        } else if (data.rfp_uploaded && data.vendors_count > 0) {
+            // Ready to process - enable button
+            processButton.disabled = false;
+            processButton.querySelector('.button-text').textContent = '🚀 Process Documents';
+        } else {
+            // Not ready - disable button
+            processButton.disabled = true;
+            processButton.querySelector('.button-text').textContent = '🚀 Process Documents';
+        }
+    }
+    
+    // Update chatbot link availability
+    const chatbotLink = document.getElementById('chatbotLink');
+    const chatbotBadge = document.getElementById('chatbotBadge');
+    
+    if (chatbotLink && chatbotBadge) {
+        if (data.chatbot_ready) {
+            chatbotLink.style.pointerEvents = 'auto';
+            chatbotLink.style.opacity = '1';
+            chatbotBadge.style.display = 'inline-block';
+            chatbotBadge.textContent = 'Ready';
+        } else {
+            chatbotLink.style.pointerEvents = 'none';
+            chatbotLink.style.opacity = '0.5';
+            chatbotBadge.style.display = 'none';
+        }
+    }
+}
+// ============================================
+// Dashboard Functions - COMPLETE UPDATED VERSION
+// Replace lines 210-355 in your main.js with this code
+// ============================================
+
+function initDashboard() {
+    loadStatus();
+    loadVendorScores(); // Load scores when dashboard initializes
+    setInterval(loadStatus, 5000); // Update every 5 seconds
+}
+
+async function loadStatus() {
+    try {
+        const response = await fetch('/api/get-status');
+        const data = await response.json();
+        
+        AppState.status = data;
+        updateDashboardUI(data);
+    } catch (error) {
+        console.error('Error loading status:', error);
+    }
+}
+
+function updateDashboardUI(data) {
+    // Update process button state based on uploaded files
+    const processButton = document.getElementById('processButton');
+    
+    if (processButton) {
+        if (data.processed) {
+            // Already processed - disable button
+            processButton.disabled = true;
+            const buttonText = processButton.querySelector('.button-text');
+            if (buttonText) buttonText.textContent = '✓ Processing Complete';
+        } else if (data.rfp_uploaded && data.vendors_count > 0) {
+            // Ready to process - enable button
+            processButton.disabled = false;
+            const buttonText = processButton.querySelector('.button-text');
+            if (buttonText) buttonText.textContent = '🚀 Process Documents';
+        } else {
+            // Not ready - disable button
+            processButton.disabled = true;
+            const buttonText = processButton.querySelector('.button-text');
+            if (buttonText) buttonText.textContent = '🚀 Process Documents';
+        }
+    }
+    
+    // Update chatbot link availability
+    const chatbotLink = document.getElementById('chatbotLink');
+    const chatbotBadge = document.getElementById('chatbotBadge');
+    
+    if (chatbotLink && chatbotBadge) {
+        if (data.chatbot_ready) {
+            chatbotLink.style.pointerEvents = 'auto';
+            chatbotLink.style.opacity = '1';
+            chatbotBadge.style.display = 'inline-block';
+            chatbotBadge.textContent = 'Ready';
+        } else {
+            chatbotLink.style.pointerEvents = 'none';
+            chatbotLink.style.opacity = '0.5';
+            chatbotBadge.style.display = 'none';
+        }
+    }
+}
+
+async function processDocuments() {
+    const processButton = document.getElementById('processButton');
+    const statusMessage = document.getElementById('statusMessage');
+    
+    if (!confirm('Start processing documents? This may take a few minutes.')) {
+        return;
+    }
+    
+    // Show loading
+    setButtonLoading(processButton, true);
+    if (statusMessage) {
+        statusMessage.textContent = '⏳ Processing documents...';
+        statusMessage.style.display = 'block';
+        statusMessage.style.background = 'rgba(59, 130, 246, 0.15)';
+        statusMessage.style.color = '#1d4ed8';
+    }
+    
+    try {
+        const response = await fetch('/api/process-documents', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (statusMessage) {
+                statusMessage.textContent = '✓ Processing completed successfully!';
+                statusMessage.style.background = 'rgba(76, 175, 80, 0.15)';
+                statusMessage.style.color = '#2e7d32';
+            }
+            
+            // Load vendor scores
+            await loadVendorScores();
+            
+            // Reload status
+            await loadStatus();
+            
+            setTimeout(() => {
+                if (statusMessage) statusMessage.style.display = 'none';
+            }, 5000);
+        } else {
+            if (statusMessage) {
+                statusMessage.textContent = '✗ Processing failed: ' + (data.message || 'Unknown error');
+                statusMessage.style.background = 'rgba(244, 67, 54, 0.15)';
+                statusMessage.style.color = '#c62828';
+            }
+        }
+    } catch (error) {
+        if (statusMessage) {
+            statusMessage.textContent = '✗ Network error: ' + error.message;
+            statusMessage.style.background = 'rgba(244, 67, 54, 0.15)';
+            statusMessage.style.color = '#c62828';
+        }
+        console.error('Processing error:', error);
+    } finally {
+        setButtonLoading(processButton, false);
+    }
+}
+
+async function loadVendorScores() {
+    try {
+        const response = await fetch('/api/get-scores');
+        const data = await response.json();
+
+        const container = document.getElementById('vendorScoreContainer');
+        const noScores = document.getElementById('noScores');
+
+        if (!data.success || !data.scores || Object.keys(data.scores.vendors || {}).length === 0) {
+            if (container) container.innerHTML = '';
+            if (noScores) noScores.style.display = 'block';
+            return;
+        }
+
+        if (noScores) noScores.style.display = 'none';
+        if (container) container.innerHTML = '';
+
+        const vendors = Object.values(data.scores.vendors);
+
+        // Sort vendors by total score (descending)
+        vendors.sort((a, b) => (b.total_score || 0) - (a.total_score || 0));
+
+        vendors.forEach(vendor => {
+            // Safe default values
+            const total = vendor.total_score !== undefined ? vendor.total_score.toFixed(1) : 'N/A';
+            const conf = vendor.confidence_score !== undefined ? (vendor.confidence_score * 100).toFixed(0) + '%' : 'N/A';
+            const strengths = vendor.strengths || [];
+            const weaknesses = vendor.weaknesses || [];
+            const criteria = vendor.criteria_breakdown || [];
+
+            const card = document.createElement('div');
+            card.className = 'vendor-card';
+
+            card.innerHTML = `
+                <div class="card-head">
+                    <h3 class="vendor-title">${vendor.vendor_name || 'Unnamed Vendor'}</h3>
+                    <div class="vendor-badges">
+                        <span class="badge score-badge">Total Score: ${total}</span>
+                    </div>
+                </div>
+
+                <div class="card-row">
+                    <div class="card-col">
+                        <h4>Strengths:</h4>
+                        <ul class="list-box strengths-list">
+                            ${strengths.length ? strengths.map(s => `<li>${s}</li>`).join('') : '<li>No strengths identified</li>'}
+                        </ul>
+                    </div>
+
+                    <div class="card-col">
+                        <h4>Weaknesses:</h4>
+                        <ul class="list-box weaknesses-list">
+                            ${weaknesses.length ? weaknesses.map(w => `<li>${w}</li>`).join('') : '<li>No weaknesses identified</li>'}
+                        </ul>
+                    </div>
+                </div>
+
+                <h4 class="criteria-heading">Criteria Breakdown:</h4>
+                <div class="criteria-box">
+                    ${criteria.map(c => {
+                        const evidenceList = (c.evidence || []);
+                        const gapsList = (c.gaps || []);
+                        
+                        return `
+                        <div class="criterion">
+                            <div class="crit-meta">
+                                <strong>${c.criterion_name} (Weighted: ${c.weighted_score !== undefined ? c.weighted_score.toFixed(1) : 'N/A'})</strong>
+                                <span class="crit-scores">Confidence: ${c.confidence !== undefined ? (c.confidence * 100).toFixed(0) + '%' : 'N/A'}</span>
+                            </div>
+                            <div class="crit-sub">
+                                <details>
+                                    <summary>Evidence (${evidenceList.length})</summary>
+                                    ${evidenceList.length ? `
+                                        <ul>
+                                            ${evidenceList.map(ev => `<li>${ev}</li>`).join('')}
+                                        </ul>
+                                    ` : '<p style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;">No evidence provided</p>'}
+                                </details>
+                                <details>
+                                    <summary>Gaps (${gapsList.length})</summary>
+                                    ${gapsList.length ? `
+                                        <ul>
+                                            ${gapsList.map(g => `<li>${g}</li>`).join('')}
+                                        </ul>
+                                    ` : '<p style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;">No gaps identified</p>'}
+                                </details>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            if (container) container.appendChild(card);
+        });
+    } catch (error) {
+        console.error('Error loading vendor scores:', error);
+    }
+}
