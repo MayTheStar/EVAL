@@ -1,213 +1,331 @@
-# 🧠 EVAL – Intelligent RFP & Vendor Response Analysis Platform
+# 🎯 RFP Evaluation System
 
-**EVAL** is an AI-powered platform that automates the evaluation of *Request for Proposals (RFPs)* and *Vendor Responses*.  
-It intelligently extracts requirements, compares vendor capabilities, and provides real-time compliance insights through an interactive web interface and integrated chatbot.
+An intelligent AI-powered system for automated Request for Proposal (RFP) evaluation and vendor matching. This system streamlines the procurement process by automatically analyzing RFPs, extracting requirements, evaluating vendor capabilities, and generating comprehensive compliance reports.
 
----
+## 📋 Table of Contents
 
-## 🚀 Key Features
+- [Features](#features)
+- [System Architecture](#system-architecture)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Technology Stack](#technology-stack)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License](#license)
 
-- **Automated RFP Requirement Extraction**  
-  Uses advanced NLP models to identify and structure RFP requirements.
+## ✨ Features
 
-- **Vendor Response Analysis**  
-  Extracts capabilities, commitments, and differentiators from vendor documents.
+### Core Capabilities
 
-- **Compliance Evaluation**  
-  Automatically checks each vendor against mandatory and desirable requirements.
+- **📄 Intelligent Document Processing**
+  - Automatic extraction of requirements from RFP documents
+  - Support for multiple document formats (PDF, DOCX, TXT)
+  - Advanced natural language processing for requirement identification
 
-- **Interactive Dashboards**  
-  Displays evaluation results and insights visually for faster decision-making.
+- **🔍 Vendor Capability Analysis**
+  - Automated extraction of vendor capabilities from proposals
+  - Semantic matching between RFP requirements and vendor offerings
+  - Comprehensive vendor profile management
 
-- **AI Chatbot Assistant**  
-  Allows users to query results naturally and explore comparisons instantly.
+- **📊 Automated Compliance Checking**
+  - Line-by-line requirement matching
+  - Compliance scoring with detailed justifications
+  - Gap analysis and missing requirement identification
 
-- **Modular & Scalable Architecture**  
-  Designed for easy integration, extensibility, and production deployment.
+- **💬 Interactive AI Chatbot**
+  - Natural language queries about RFPs and vendors
+  - Context-aware responses based on uploaded documents
+  - Real-time assistance during evaluation process
 
-  ---- 
+- **📈 Comprehensive Reporting**
+  - Detailed evaluation reports with scores and recommendations
+  - Visual dashboards for vendor comparison
+  - Export capabilities for stakeholder presentations
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────┐
+│   Web Interface │
+│   (Flask App)   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   AI Engine     │
+│  - Parser       │
+│  - Extractor    │
+│  - Embedder     │
+│  - Scorer       │
+│  - Chatbot      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   Backend Core  │
+│  - Database     │
+│  - Models       │
+│  - Config       │
+└─────────────────┘
+```
+
 ## 📁 Project Structure
 
-```bash
-.
-├── README.md
-├── ai_engine
-│   └── __pycache__
-│       ├── LLMSecDetector.cpython-313.pyc
-│       ├── __init__.cpython-313.pyc
-│       ├── parser.cpython-313.pyc
-│       └── pdf_processing.cpython-313.pyc
-├── backend
-│   ├── __pycache__
-│   │   └── backend.cpython-313.pyc
-│   └── core
-│       ├── __pycache__
-│       │   ├── config.cpython-313.pyc
-│       │   └── database.cpython-313.pyc
+```
+evaluation/
+├── ai_engine/              # AI processing modules
+│   ├── main.py            # Main AI orchestration
+│   ├── parser.py          # Document parsing
+│   ├── extractor.py       # Requirement extraction
+│   ├── embeder.py         # Vector embeddings
+│   ├── Scorer.py          # Compliance scoring
+│   ├── chatbot.py         # AI chatbot interface
+│   ├── compliance_checker.py
+│   ├── vendor_parser.py
+│   ├── vendor_capability_extractor.py
+│   └── util.py            # Utility functions
+│
+├── backend/               # Backend services
+│   ├── core_main.py      # Main backend entry point
+│   └── core/             # Core backend modules
 │       ├── core_config.py
-│       ├── core_main.py
 │       ├── core_models.py
-│       ├── database.py
-│       ├── models
-│       │   └── __pycache__
-│       │       ├── document.cpython-313.pyc
-│       │       ├── requirement.cpython-313.pyc
-│       │       └── vendor_claim.cpython-313.pyc
-│       └── services
-│           └── __pycache__
-│               └── init_db.cpython-313.pyc
-├── chunks_metadata.json
-├── data
-│   └── results
-├── docker-compose.yml
-├── docs
-│   └── SPRINT_1_REPORT.md
-├── frontend
-│   └── package.json
-├── outputs
-│   └── c394b603-d86f-40c0-90c7-86468650c4dd
-│       ├── chunks
-│       │   └── rfp_rfp_USask_RFP_chunks.txt
-│       └── embeddings
-│           └── chunks_faiss.index
-├── requirements-old.txt
-├── requirements.txt
-├── sample_rfp.pdf
-├── tests
-│   ├── test_ai.py
-│   ├── test_api.py
-│   └── test_integration.py
-├── vendor_responses
-│   └── BeamData-2.docx
-└── web app
-    ├── __pycache__
-    │   ├── chatbot.cpython-313.pyc
-    │   ├── compliance_checker.cpython-313.pyc
-    │   ├── embeder.cpython-313.pyc
-    │   ├── extractor.cpython-313.pyc
-    │   ├── main.cpython-313.pyc
-    │   ├── parser.cpython-313.pyc
-    │   ├── vendor_capability_extractor.cpython-313.pyc
-    │   └── vendor_parser.cpython-313.pyc
-    ├── app.py
-    ├── chatbot.py
-    ├── compliance_checker.py
-    ├── config.py
-    ├── embeder.py
-    ├── extractor.py
-    ├── main.py
-    ├── outputs
-    │   ├── 75cd39dc-7782-4322-a95a-098b479093f9
-    │   │   ├── chunks
-    │   │   │   └── rfp_USask_RFP_chunks.txt
-    │   │   └── embeddings
-    │   │       └── chunks_faiss.index
-    │   ├── c31c106e-d35f-492e-a19d-d68b86788a56
-    │   │   ├── analysis
-    │   │   │   ├── Leafbridge_analysis.json
-    │   │   │   └── rfp_chunk_analysis.json
-    │   │   ├── chunks
-    │   │   │   ├── Leafbridge_capability_analysis.json
-    │   │   │   ├── Leafbridge_chunks.json
-    │   │   │   ├── rfp_RFP_CP-730126_Generative_AI_RFP_chunks.json
-    │   │   │   └── rfp_RFP_CP-730126_Generative_AI_RFP_chunks.txt
-    │   │   └── embeddings
-    │   │       ├── chunks_faiss.index
-    │   │       └── chunks_metadata.json
-    │   └── compliance
-    │       ├── BeamData_compliance.json
-    │       ├── Cognivize_Technologies_FZ_compliance.json
-    │       └── Leafbridge_compliance.json
-    ├── parser.py
-    ├── requirements.txt
-    ├── static
-    │   ├── css
-    │   │   └── style.css
-    │   └── js
-    │       ├── chatbot.js
-    │       ├── dashboard.js
-    │       ├── files.js
-    │       ├── upload_rfp.js
-    │       └── upload_vendor.js
-    ├── templates
-    │   ├── chatbot.html
-    │   ├── dashboard.html
-    │   ├── files.html
-    │   ├── landing.html
-    │   ├── upload_rfp.html
-    │   └── upload_vendor.html
-    ├── uploads
-    │   └── c31c106e-d35f-492e-a19d-d68b86788a56
-    │       ├── rfp_RFP_CP-730126_Generative_AI_RFP.pdf
-    │       └── vendor_Leafbridge.pdf
-    ├── util.py
-    ├── vendor_capability_extractor.py
-    └── vendor_parser.py
-
----
-
-## ⚙️ Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|-------------|----------|
-| **Frontend** | HTML, CSS, JavaScript | Interactive UI |
-| **Backend** | Flask / FastAPI | API and workflow orchestration |
-| **AI/NLP Engine** | OpenAI GPT-4o-mini, SentenceTransformers | Requirement & capability extraction |
-| **Database** | PostgreSQL | Store extracted data and metadata |
-| **Infrastructure** | Docker, DVC, MLflow | Containerization and model tracking |
-
----
-
-## 🧩 Core Modules Overview
-
-| Module | Description |
-|--------|--------------|
-| `parser.py` | Splits and preprocesses RFP and vendor documents into chunks |
-| `extractor.py` | Extracts requirements and capabilities using OpenAI |
-| `compliance_checker.py` | Compares extracted data to determine compliance |
-| `chatbot.py` | Interactive Q&A system for users to explore insights |
-| `vendor_capability_extractor.py` | Extracts and analyzes vendor claims |
-| `main.py` | Orchestrates the full end-to-end pipeline |
-
----
+│       └── database.py
+│
+├── web_app/              # Web application
+│   ├── app.py           # Flask application
+│   ├── templates/       # HTML templates
+│   │   ├── index.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── dashboard.html
+│   │   ├── upload_rfp.html
+│   │   ├── upload_vendor.html
+│   │   ├── files_uploaded.html
+│   │   ├── chatbot.html
+│   │   └── profile.html
+│   └── static/          # CSS, JS, images
+│       ├── style.css
+│       └── main.js
+│
+├── uploads/             # Uploaded documents storage
+├── outputs/             # Generated reports and results
+├── docker/              # Docker configuration
+├── .gitignore
+└── README.md
 ```
 
-# 🧰 Setup & Installation
+## 🚀 Installation
 
-### 1. Clone the repository
+### Prerequisites
+
+- Python 3.8 or higher
+- pip package manager
+- Virtual environment (recommended)
+- API keys for AI services (OpenAI/Anthropic)
+
+### Step 1: Clone the Repository
+
 ```bash
-git clone https://github.com/MayTheStar/EVAL.git
-cd EVAL
+git clone https://github.com/yourusername/rfp-evaluation-system.git
+cd rfp-evaluation-system
 ```
 
-### 2. Create and activate a virtual environment
+### Step 2: Create Virtual Environment
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### 3. Install dependencies
+### Step 3: Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Set environment variables
+### Step 4: Configure Environment Variables
+
 Create a `.env` file in the root directory:
 
-```
+```env
+# API Keys
 OPENAI_API_KEY=your_openai_api_key
-SECRET_KEY=eval-secret-key
-DATABASE_URL=your_database_url
+ANTHROPIC_API_KEY=your_anthropic_api_key
+
+# Database Configuration
+DATABASE_URL=sqlite:///evaluation.db
+
+# Flask Configuration
+FLASK_SECRET_KEY=your_secret_key_here
+FLASK_ENV=development
+
+# Upload Configuration
+MAX_UPLOAD_SIZE=16777216  # 16MB
+ALLOWED_EXTENSIONS=pdf,docx,txt
 ```
 
-### 5. Run the web app
+### Step 5: Initialize Database
+
 ```bash
-cd "web app"
-uvicorn web_app.main:app --reload
+python backend/core_main.py
 ```
 
-or (for Flask)
+## 💻 Usage
+
+### Starting the Application
+
+#### Using Python
+
 ```bash
+# Start the web application
+cd web_app
 python app.py
 ```
 
+The application will be available at `http://localhost:5000`
+
+#### Using Docker
+
+```bash
+# Build the Docker image
+docker build -t rfp-evaluation .
+
+# Run the container
+docker run -p 5000:5000 rfp-evaluation
+```
+
+### Workflow
+
+1. **Register/Login**: Create an account or log in to the system
+2. **Upload RFP**: Navigate to the RFP upload page and submit your RFP document
+3. **Upload Vendor Proposals**: Upload vendor response documents for evaluation
+4. **View Results**: Check the dashboard for automated evaluation results
+5. **Use Chatbot**: Ask questions about requirements and vendor capabilities
+6. **Download Reports**: Export detailed evaluation reports
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Python 3.8+**: Core programming language
+- **Flask**: Web framework
+- **SQLAlchemy**: Database ORM
+- **SQLite**: Database (development)
+
+### AI/ML
+- **OpenAI GPT**: Natural language processing
+- **LangChain**: LLM application framework
+- **ChromaDB**: Vector database for embeddings
+- **Sentence Transformers**: Semantic similarity
+
+### Frontend
+- **HTML5/CSS3**: Structure and styling
+- **JavaScript**: Interactive functionality
+- **Bootstrap**: Responsive design
+
+### Document Processing
+- **PyPDF2**: PDF parsing
+- **python-docx**: Word document processing
+- **BeautifulSoup4**: HTML parsing
+
+## ⚙️ Configuration
+
+### AI Engine Configuration
+
+Edit `ai_engine/config.py` to customize:
+
+- Model selection (GPT-4, Claude, etc.)
+- Embedding dimensions
+- Scoring thresholds
+- Processing parameters
+
+### Backend Configuration
+
+Edit `backend/core/core_config.py` for:
+
+- Database settings
+- File upload limits
+- Session management
+- Security parameters
+
+## 📊 Features in Detail
+
+### RFP Parsing
+The system automatically extracts:
+- Technical requirements
+- Functional specifications
+- Compliance criteria
+- Evaluation criteria
+- Timeline and milestones
+
+### Vendor Evaluation
+Automated assessment includes:
+- Requirement coverage analysis
+- Capability matching scores
+- Compliance percentage
+- Gap identification
+- Risk assessment
+
+### AI Chatbot
+Interactive features:
+- Query RFP requirements
+- Ask about vendor capabilities
+- Request clarifications
+- Generate custom reports
+- Compare vendors
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow PEP 8 style guide for Python code
+- Write unit tests for new features
+- Update documentation for API changes
+- Ensure all tests pass before submitting PR
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Authors
+
+- Your Name - Initial work
+
+## 🙏 Acknowledgments
+
+- OpenAI for GPT models
+- Anthropic for Claude AI
+- LangChain community
+- All contributors to this project
+
+## 📞 Support
+
+For support, please:
+- Open an issue on GitHub
+- Contact: your.email@example.com
+- Documentation: [Wiki](https://github.com/yourusername/rfp-evaluation-system/wiki)
+
+## 🗺️ Roadmap
+
+- [ ] Multi-language support
+- [ ] Advanced analytics dashboard
+- [ ] Integration with procurement systems
+- [ ] Mobile application
+- [ ] Real-time collaboration features
+- [ ] Custom scoring models
+- [ ] Export to multiple formats (Excel, PowerPoint)
+
+---
+
+**Note**: This system is designed to assist in the RFP evaluation process. Final decisions should always be made by qualified procurement professionals.
+
+Made with ❤️ for better procurement processes
