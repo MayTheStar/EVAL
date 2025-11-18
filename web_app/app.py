@@ -46,8 +46,9 @@ print("--------------------------------")
 
 
 # ---------------- Import database and models ----------------
-from database import SessionLocal, Base, engine
-from core_models import User, Project, RFPDocument, VendorDocument, VendorEvaluation
+from backend.core.database import SessionLocal, Base, engine
+from backend.core.core_models import User, Project, RFPDocument, VendorDocument, VendorEvaluation
+
 
 # ---------------- Import AI modules ----------------
 try:

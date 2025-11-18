@@ -1,0 +1,39 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environments
+.venv/
+venv/
+env/
+
+# Ignore build artifacts
+*.db
+*.sqlite3
+
+# Ignore large folders
+outputs/
+uploads/
+instance/
+tests/
+
+# Ignore logs
+*.log
+
+# Ignore notebooks
+*.ipynb
+
+# Ignore images and PDFs
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
+# Ignore Git
+.git/
+.gitignore
+
+# Ignore IDE
+.vscode/
+.idea/
